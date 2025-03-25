@@ -14,8 +14,8 @@ class VehicleManagement extends StatefulWidget {
 
 class _VehicleManagementState extends State<VehicleManagement> {
   final TextEditingController _searchController = TextEditingController();
-  List<Map<String, String>> vehicleList = [];
-  List<Map<String, String>> filteredVehicles = [];
+  List<Map<String, dynamic>> vehicleList = [];
+  List<Map<String, dynamic>> filteredVehicles = [];
   late VehicleDataSource _dataSource;
   static const int rowsPerPage = 10;
   bool _isLoading = true;
@@ -23,38 +23,43 @@ class _VehicleManagementState extends State<VehicleManagement> {
   @override
   void initState() {
     super.initState();
-    _dataSource =
-        VehicleDataSource([], _viewVehicle, _updateVehicle, _deleteVehicle);
+    _dataSource = VehicleDataSource(
+        [], _viewVehicle, _updateVehicle, _maintenanceVehicle, _deleteVehicle);
     _fetchVehicles();
   }
 
   void _fetchVehicles() {
-    setState(() => _isLoading = true);
+    FirebaseFirestore.instance.collection('vehicles').snapshots().listen(
+      (snapshot) {
+        if (!mounted) return;
+        setState(() {
+          vehicleList = snapshot.docs
+              .map((doc) => {
+                    'id': doc.id,
+                    'brand': doc['brand'] ?? '',
+                    'model': doc['model'] ?? '',
+                    'plate_num': doc['plate_num'] ?? '',
+                    'body_type': doc['body_type'] ?? '',
+                    'color': doc['color'] ?? '',
+                    'rental_rate': doc['rental_rate'] ?? '',
+                    'status': doc['status'] ?? '',
+                  })
+              .toList();
 
-    FirebaseFirestore.instance
-        .collection('vehicles')
-        .snapshots()
-        .listen((snapshot) {
-      setState(() {
-        vehicleList = snapshot.docs
-            .map((doc) => {
-                  'id': doc.id,
-                  'brand': doc['brand']?.toString() ?? '',
-                  'model': doc['model']?.toString() ?? '',
-                  'plate_num': doc['plate_num']?.toString() ?? '',
-                  'body_type': doc['body_type']?.toString() ?? '',
-                  'color': doc['color']?.toString() ?? '',
-                  'rental_rate': doc['rental_rate']?.toString() ?? '',
-                  'status': doc['status']?.toString() ?? '',
-                })
-            .toList();
-
-        filteredVehicles = List.from(vehicleList);
-        _dataSource = VehicleDataSource(
-            filteredVehicles, _viewVehicle, _updateVehicle, _deleteVehicle);
-        _isLoading = false;
-      });
-    });
+          filteredVehicles = List.from(vehicleList);
+          _dataSource = VehicleDataSource(filteredVehicles, _viewVehicle,
+              _updateVehicle, _maintenanceVehicle, _deleteVehicle);
+          _isLoading = false;
+        });
+      },
+      onError: (error) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching staff: $error')),
+        );
+      },
+    );
   }
 
   void _filterVehicles(String query) {
@@ -69,13 +74,36 @@ class _VehicleManagementState extends State<VehicleManagement> {
                   vehicle['model']!
                       .toLowerCase()
                       .contains(query.toLowerCase()) ||
+                  vehicle['body_type']!
+                      .toLowerCase()
+                      .contains(query.toLowerCase()) ||
+                  vehicle['color']!
+                      .toLowerCase()
+                      .contains(query.toLowerCase()) ||
+                  vehicle['rental_rate']!
+                      .toLowerCase()
+                      .contains(query.toLowerCase()) ||
                   vehicle['plate_num']!
                       .toLowerCase()
                       .contains(query.toLowerCase()))
               .toList();
 
-      _dataSource = VehicleDataSource(
-          filteredVehicles, _viewVehicle, _updateVehicle, _deleteVehicle);
+      _dataSource = VehicleDataSource(filteredVehicles, _viewVehicle,
+          _updateVehicle, _maintenanceVehicle, _deleteVehicle);
+    });
+  }
+
+  void _filterByVehicleId(String query) {
+    setState(() {
+      filteredVehicles = query.isEmpty
+          ? List.from(vehicleList)
+          : vehicleList
+              .where((staff) =>
+                  staff['id']!.toLowerCase().contains(query.toLowerCase()))
+              .toList();
+
+      _dataSource = VehicleDataSource(filteredVehicles, _viewVehicle,
+          _updateVehicle, _maintenanceVehicle, _deleteVehicle);
     });
   }
 
@@ -85,7 +113,7 @@ class _VehicleManagementState extends State<VehicleManagement> {
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: SizedBox(
-          width: 400,
+          width: 500,
           child: AddVehicleForm(),
         ),
       ),
@@ -93,75 +121,44 @@ class _VehicleManagementState extends State<VehicleManagement> {
   }
 
   void _viewVehicle(int index) {
-    String vehicleId = filteredVehicles[index]['id']!;
-    String brand = filteredVehicles[index]['brand']!;
-    String model = filteredVehicles[index]['model']!;
-    String plateNum = filteredVehicles[index]['plate_num']!;
-    String bodyType = filteredVehicles[index]['body_type']!;
-    String color = filteredVehicles[index]['color']!;
-    String rentalRate = filteredVehicles[index]['rental_rate']!;
-    String status = filteredVehicles[index]['status']!;
-
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: SizedBox(
-          width: 400, // Ensure consistent width
-          height: 500, // Set a fixed height similar to AddStaffForm
-          child: ViewVehicleForm(
-            vehicleId: vehicleId,
-            brand: brand,
-            model: model,
-            plateNumber: plateNum,
-            bodyType: bodyType,
-            color: color,
-            rentalRate: rentalRate,
-            status: status,
-          ),
-        ),
+      builder: (context) => ViewVehicleForm(
+        vehicleId: filteredVehicles[index]['id']!,
       ),
     );
   }
 
   void _updateVehicle(int index) async {
-    String vehicleId = filteredVehicles[index]['id']!;
-    String brand = filteredVehicles[index]['brand']!;
-    String model = filteredVehicles[index]['model']!;
-    String plateNum = filteredVehicles[index]['plate_num']!;
-    String bodyType = filteredVehicles[index]['body_type']!;
-    String color = filteredVehicles[index]['color']!;
-    String rentalRate = filteredVehicles[index]['rental_rate']!;
-    String status = filteredVehicles[index]['status']!;
-
-    bool? updated = await showDialog(
+    showDialog(
       context: context,
-      builder: (context) => UpdateVehicleForm(
-        vehicleId: vehicleId,
-        brand: brand,
-        model: model,
-        plateNumber: plateNum,
-        bodyType: bodyType,
-        color: color,
-        rentalRate: rentalRate,
-        status: status,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: SizedBox(
+            width: 500,
+            child: UpdateVehicleForm(
+              vehicleId: filteredVehicles[index]['id']!,
+            )),
       ),
     );
-
-    if (updated == true) {
-      _fetchVehicles(); // Refresh staff list after update
-    }
   }
 
   void _deleteVehicle(int index) async {
-    String vehicleId = filteredVehicles[index]['id']!;
-    String model = filteredVehicles[index]['model']!;
-
     showDialog(
       context: context,
       builder: (context) => DeleteVehicleDialog(
-        vehicleId: vehicleId,
-        vehicleModel: model,
+        vehicleId: filteredVehicles[index]['id']!,
+        vehicleModel: filteredVehicles[index]['model']!,
+      ),
+    );
+  }
+
+  void _maintenanceVehicle(int index) async {
+    showDialog(
+      context: context,
+      builder: (context) => DeleteVehicleDialog(
+        vehicleId: filteredVehicles[index]['id']!,
+        vehicleModel: filteredVehicles[index]['model']!,
       ),
     );
   }
@@ -190,7 +187,8 @@ class _VehicleManagementState extends State<VehicleManagement> {
   Widget _buildSearchBar() {
     return Row(
       children: [
-        Expanded(
+        SizedBox(
+          width: 300, // Fixed width for general search
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
@@ -200,6 +198,19 @@ class _VehicleManagementState extends State<VehicleManagement> {
                   OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onChanged: _filterVehicles,
+          ),
+        ),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 200, // Fixed width for ID search
+          child: TextField(
+            decoration: InputDecoration(
+              labelText: 'Vehicle ID',
+              prefixIcon: const Icon(Icons.confirmation_number_sharp),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onChanged: _filterByVehicleId,
           ),
         ),
         const SizedBox(width: 10),
@@ -223,12 +234,12 @@ class _VehicleManagementState extends State<VehicleManagement> {
               scrollDirection: Axis.vertical,
               child: DataTableTheme(
                 data: DataTableThemeData(
-                  headingRowColor: MaterialStateProperty.all(Colors.amber),
+                  headingRowColor: WidgetStateProperty.all(Colors.amber),
                   headingTextStyle: const TextStyle(
                       color: Colors.white, fontWeight: FontWeight.bold),
                   dataRowColor:
-                      MaterialStateProperty.resolveWith<Color?>((states) {
-                    return states.contains(MaterialState.selected)
+                      WidgetStateProperty.resolveWith<Color?>((states) {
+                    return states.contains(WidgetState.selected)
                         ? Colors.grey[300]
                         : null;
                   }),
@@ -261,33 +272,36 @@ class _VehicleManagementState extends State<VehicleManagement> {
 }
 
 class VehicleDataSource extends DataTableSource {
-  final List<Map<String, String>> vehicles;
+  final List<Map<String, dynamic>> vehicles;
   final Function(int) onView;
   final Function(int) onUpdate;
+  final Function(int) onMaintenance;
   final Function(int) onDelete;
 
-  VehicleDataSource(this.vehicles, this.onView, this.onUpdate, this.onDelete);
+  VehicleDataSource(this.vehicles, this.onView, this.onUpdate,
+      this.onMaintenance, this.onDelete);
 
   @override
   DataRow? getRow(int index) {
     if (index >= vehicles.length) return null;
     final vehicle = vehicles[index];
     return DataRow(cells: [
-      DataCell(Text(vehicle['id']!)),
-      DataCell(Text(vehicle['brand']!)),
-      DataCell(Text(vehicle['model']!)),
-      DataCell(Text(vehicle['plate_num']!)),
-      DataCell(Text(vehicle['body_type']!)),
-      DataCell(Text(vehicle['color']!)),
-      DataCell(Text(vehicle['rental_rate']!)),
-      DataCell(Text(vehicle['status']!)),
+      DataCell(Text(vehicle['id'].toString())),
+      DataCell(Text(vehicle['brand'].toString())),
+      DataCell(Text(vehicle['model'].toString())),
+      DataCell(Text(vehicle['plate_num'].toString())),
+      DataCell(Text(vehicle['body_type'].toString())),
+      DataCell(Text(vehicle['color'].toString())),
+      DataCell(Text("₱ ${vehicle['rental_rate']}")),
+      DataCell(Text(vehicle['status'].toString())),
       DataCell(Row(
         children: [
-          TextButton(onPressed: () => onView(index), child: const Text('View')),
-          TextButton(
-              onPressed: () => onUpdate(index), child: const Text('Update')),
-          TextButton(
-              onPressed: () => onDelete(index), child: const Text('Delete')),
+          _buildIconButton(
+              Icons.visibility, Colors.orange, () => onView(index)),
+          _buildIconButton(Icons.edit, Colors.blue, () => onUpdate(index)),
+          _buildIconButton(Icons.car_crash_sharp, Colors.blueGrey,
+              () => onMaintenance(index)),
+          _buildIconButton(Icons.delete, Colors.red, () => onDelete(index)),
         ],
       )),
     ]);
@@ -295,8 +309,17 @@ class VehicleDataSource extends DataTableSource {
 
   @override
   bool get isRowCountApproximate => false;
+
   @override
   int get rowCount => vehicles.length;
+
   @override
   int get selectedRowCount => 0;
+
+  Widget _buildIconButton(IconData icon, Color color, VoidCallback onPressed) {
+    return IconButton(
+      icon: Icon(icon, color: color),
+      onPressed: onPressed,
+    );
+  }
 }

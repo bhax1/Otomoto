@@ -1,27 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class UpdateVehicleForm extends StatefulWidget {
   final String vehicleId;
-  final String brand;
-  final String model;
-  final String plateNumber;
-  final String bodyType;
-  final String color;
-  final String rentalRate;
-  final String status;
 
-  const UpdateVehicleForm({
-    super.key,
-    required this.vehicleId,
-    required this.brand,
-    required this.model,
-    required this.plateNumber,
-    required this.bodyType,
-    required this.color,
-    required this.rentalRate,
-    required this.status,
-  });
+  const UpdateVehicleForm({super.key, required this.vehicleId});
 
   @override
   _UpdateVehicleFormState createState() => _UpdateVehicleFormState();
@@ -35,19 +19,65 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
   late TextEditingController _bodyTypeController;
   late TextEditingController _colorController;
   late TextEditingController _rentalRateController;
-  late TextEditingController _statusController;
+  String? _status;
   bool _isUpdating = false;
+  bool _isLoading = true;
+  double _opacity = 1.0;
 
   @override
   void initState() {
     super.initState();
-    _brandController = TextEditingController(text: widget.brand);
-    _modelController = TextEditingController(text: widget.model);
-    _plateNumberController = TextEditingController(text: widget.plateNumber);
-    _bodyTypeController = TextEditingController(text: widget.bodyType);
-    _colorController = TextEditingController(text: widget.color);
-    _rentalRateController = TextEditingController(text: widget.rentalRate);
-    _statusController = TextEditingController(text: widget.status);
+    _brandController = TextEditingController();
+    _modelController = TextEditingController();
+    _plateNumberController = TextEditingController();
+    _bodyTypeController = TextEditingController();
+    _colorController = TextEditingController();
+    _rentalRateController = TextEditingController();
+    _fetchVehicleDetails();
+  }
+
+  Future<void> _fetchVehicleDetails() async {
+    setState(() {
+      _isLoading = true;
+      _opacity = 0.0;
+    });
+
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('vehicles')
+          .doc(widget.vehicleId)
+          .get();
+
+      if (doc.exists) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        setState(() {
+          _brandController.text = data['brand'] ?? '';
+          _modelController.text = data['model'] ?? '';
+          _plateNumberController.text = data['plate_number'] ?? '';
+          _bodyTypeController.text = data['body_type'] ?? '';
+          _colorController.text = data['color'] ?? '';
+          _rentalRateController.text = data['rental_rate']?.toString() ?? '';
+          _status = data['status'] ?? '';
+        });
+      }
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          setState(() {
+            _opacity = 1.0;
+          });
+        }
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to load vehicle details.")),
+      );
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -58,7 +88,6 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
     _bodyTypeController.dispose();
     _colorController.dispose();
     _rentalRateController.dispose();
-    _statusController.dispose();
     super.dispose();
   }
 
@@ -77,17 +106,16 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
         'plate_number': _plateNumberController.text,
         'body_type': _bodyTypeController.text,
         'color': _colorController.text,
-        'rental_rate': _rentalRateController.text,
-        'status': _statusController.text,
+        'rental_rate': double.tryParse(_rentalRateController.text) ?? 0,
+        'status': _status,
         'lastUpdated': FieldValue.serverTimestamp(),
       });
 
       Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              'Vehicle "${widget.brand} ${widget.model}" updated successfully'),
-        ),
+            content: Text(
+                'Vehicle "${_brandController.text} ${_modelController.text}" updated successfully')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,43 +128,77 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Update Vehicle"),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildTextField("Brand", _brandController),
-              _buildTextField("Model", _modelController),
-              _buildTextField("Plate Number", _plateNumberController),
-              _buildTextField("Body Type", _bodyTypeController),
-              _buildTextField("Color", _colorController),
-              _buildTextField("Rental Rate", _rentalRateController,
-                  keyboard: TextInputType.number),
-              _buildTextField("Status", _statusController),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
-        ),
-        ElevatedButton(
-          onPressed: _isUpdating ? null : _updateVehicle,
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-          child: _isUpdating
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text("Update"),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: _isLoading
+          ? SingleChildScrollView(
+              child: SizedBox(
+                child: const Center(
+                  child: SpinKitThreeBounce(
+                    color: Colors.blueGrey,
+                    size: 30.0,
+                  ),
+                ),
+              ),
+            )
+          : AnimatedOpacity(
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+              opacity: _opacity,
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Update Vehicle",
+                          style: TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 5),
+                      const Text(
+                        "Form for updating details of a vehicle.",
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      _buildTextField("Brand", _brandController),
+                      _buildTextField("Model", _modelController),
+                      _buildTextField("Plate Number", _plateNumberController),
+                      _buildTextField("Body Type", _bodyTypeController),
+                      _buildTextField("Color", _colorController),
+                      _buildTextField("Rental Rate", _rentalRateController,
+                          keyboard: TextInputType.number),
+                      _buildDropdownField("Status", _status, [
+                        "Available",
+                        "Not Available",
+                        "Under Maintenance",
+                        "Rented"
+                      ]),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Cancel"),
+                          ),
+                          ElevatedButton(
+                            onPressed: _isUpdating ? null : _updateVehicle,
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue),
+                            child: _isUpdating
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2))
+                                : const Text("Update"),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
     );
   }
 
@@ -147,12 +209,27 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
       child: TextFormField(
         controller: controller,
         keyboardType: keyboard,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(),
-        ),
+        decoration:
+            InputDecoration(labelText: label, border: OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
+      ),
+    );
+  }
+
+  Widget _buildDropdownField(String label, String? value, List<String> items) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        onChanged: (newValue) => setState(() => _status = newValue),
+        decoration:
+            InputDecoration(labelText: label, border: OutlineInputBorder()),
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Required' : null,
+        items: items.map((status) {
+          return DropdownMenuItem(value: status, child: Text(status));
+        }).toList(),
       ),
     );
   }

@@ -1,23 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:intl/intl.dart';
 
 class UpdateStaffForm extends StatefulWidget {
   final String staffId;
-  final String firstName;
-  final String lastName;
-  final String address;
-  final String contact;
-  final String email;
 
-  const UpdateStaffForm({
-    super.key,
-    required this.staffId,
-    required this.firstName,
-    required this.lastName,
-    required this.address,
-    required this.contact,
-    required this.email,
-  });
+  const UpdateStaffForm({super.key, required this.staffId});
 
   @override
   _UpdateStaffFormState createState() => _UpdateStaffFormState();
@@ -25,124 +14,364 @@ class UpdateStaffForm extends StatefulWidget {
 
 class _UpdateStaffFormState extends State<UpdateStaffForm> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _firstNameController;
-  late TextEditingController _lastNameController;
-  late TextEditingController _addressController;
-  late TextEditingController _contactController;
-  late TextEditingController _emailController;
-  bool _isUpdating = false;
+  final _firstName = TextEditingController();
+  final _lastName = TextEditingController();
+  final _address = TextEditingController();
+  final _contact = TextEditingController();
+  final _email = TextEditingController();
+  final _jobPosition = TextEditingController();
+  final _emergencyContact = TextEditingController();
+  DateTime? _birthdate;
+  DateTime? _hireDate;
+  String? _gender;
+  bool? _status;
+  bool _isLoading = false;
+  double _opacity = 0.0;
+  Map<String, dynamic> _initialValues = {};
 
   @override
   void initState() {
     super.initState();
-    _firstNameController = TextEditingController(text: widget.firstName);
-    _lastNameController = TextEditingController(text: widget.lastName);
-    _addressController = TextEditingController(text: widget.address);
-    _contactController = TextEditingController(text: widget.contact);
-    _emailController = TextEditingController(text: widget.email);
+    _fetchStaffData();
+
+    // Add listeners to text fields
+    _firstName.addListener(() => setState(() {}));
+    _lastName.addListener(() => setState(() {}));
+    _address.addListener(() => setState(() {}));
+    _contact.addListener(() => setState(() {}));
+    _email.addListener(() => setState(() {}));
+    _jobPosition.addListener(() => setState(() {}));
+    _emergencyContact.addListener(() => setState(() {}));
   }
 
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _addressController.dispose();
-    _contactController.dispose();
-    _emailController.dispose();
-    super.dispose();
+  Future<void> _selectDate(
+      BuildContext context, Function(DateTime) onPicked) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) onPicked(picked);
+  }
+
+  Future<void> _fetchStaffData() async {
+    setState(() {
+      _isLoading = true;
+      _opacity = 0.0;
+    });
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('staffs')
+          .doc(widget.staffId)
+          .get();
+
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data() as Map<String, dynamic>;
+        _firstName.text = data['firstname'] ?? '';
+        _lastName.text = data['lastname'] ?? '';
+        _address.text = data['address'] ?? '';
+        _contact.text = data['contact_num'] ?? '';
+        _email.text = data['email'] ?? '';
+        _jobPosition.text = data['job_position'] ?? '';
+        _emergencyContact.text = data['emergency_contact'] ?? '';
+        _birthdate = data['birthdate'] != null
+            ? DateTime.parse(data['birthdate'])
+            : null;
+        _hireDate = data['hire_date'] != null
+            ? DateTime.parse(data['hire_date'])
+            : null;
+        _gender = data['gender'];
+        _status = data['status'];
+
+        _initialValues = {
+          'firstname': _firstName.text,
+          'lastname': _lastName.text,
+          'address': _address.text,
+          'contact_num': _contact.text,
+          'email': _email.text,
+          'job_position': _jobPosition.text,
+          'emergency_contact': _emergencyContact.text,
+          'birthdate': _birthdate?.toIso8601String(),
+          'hire_date': _hireDate?.toIso8601String(),
+          'gender': _gender,
+          'status': _status,
+        };
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Trigger opacity transition separately after UI rebuilds
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            setState(() {
+              _opacity = 1.0;
+            });
+          }
+        });
+      } else {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("No data found.")));
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to fetch staff data.")));
+    }
   }
 
   Future<void> _updateStaff() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate() ||
+        _birthdate == null ||
+        _hireDate == null ||
+        _gender == null) {
+      return;
+    }
 
-    setState(() => _isUpdating = true);
+    bool? confirm = await _showConfirmationDialog();
+    if (confirm != true) return;
 
+    setState(() => _isLoading = true);
     try {
       await FirebaseFirestore.instance
           .collection('staffs')
           .doc(widget.staffId)
           .update({
-        'firstname': _firstNameController.text,
-        'lastname': _lastNameController.text,
-        'address': _addressController.text,
-        'contact_num': _contactController.text,
-        'email': _emailController.text,
+        'firstname': _firstName.text,
+        'lastname': _lastName.text,
+        'address': _address.text,
+        'contact_num': _contact.text,
+        'email': _email.text,
+        'job_position': _jobPosition.text,
+        'birthdate': _birthdate?.toIso8601String(),
+        'hire_date': _hireDate?.toIso8601String(),
+        'gender': _gender,
+        'status': _status,
+        'emergency_contact': _emergencyContact.text,
         'lastUpdated': FieldValue.serverTimestamp(),
       });
 
-      Navigator.of(context).pop(true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                'Staff "${widget.firstName} ${widget.lastName}" updated successfully')),
-      );
+      _showSuccessDialog("${_firstName.text} ${_lastName.text}");
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Failed to update staff.")),
       );
     } finally {
-      setState(() => _isUpdating = false);
+      setState(() => _isLoading = false);
     }
+  }
+
+  Future<bool?> _showConfirmationDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Update"),
+        content:
+            const Text("Are you sure you want to update this staff member?"),
+        actions: [
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              onPressed: () => Navigator.pop(context, true),
+              child:
+                  const Text("Confirm", style: TextStyle(color: Colors.white))),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child:
+                  const Text("Cancel", style: TextStyle(color: Colors.grey))),
+        ],
+      ),
+    );
+  }
+
+  void _showSuccessDialog(String staffName) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Staff Updated Successfully!"),
+        content: Row(
+          children: [
+            const Icon(Icons.info_outline, color: Colors.blue),
+            const SizedBox(width: 8),
+            Expanded(
+                child: Text('Staff member "$staffName" updated successfully.')),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _hasChanges() {
+    return _firstName.text != _initialValues['firstname'] ||
+        _lastName.text != _initialValues['lastname'] ||
+        _address.text != _initialValues['address'] ||
+        _contact.text != _initialValues['contact_num'] ||
+        _email.text != _initialValues['email'] ||
+        _jobPosition.text != _initialValues['job_position'] ||
+        _emergencyContact.text != _initialValues['emergency_contact'] ||
+        _birthdate?.toIso8601String() != _initialValues['birthdate'] ||
+        _hireDate?.toIso8601String() != _initialValues['hire_date'] ||
+        _gender != _initialValues['gender'] ||
+        _status != _initialValues['status'];
   }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Update Staff"),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                    child: _buildTextField("First Name", _firstNameController)),
-                const SizedBox(width: 8),
-                Expanded(
-                    child: _buildTextField("Last Name", _lastNameController)),
-              ],
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: _isLoading
+          ? SingleChildScrollView(
+              child: SizedBox(
+                child: const Center(
+                  child: SpinKitThreeBounce(
+                    color: Colors.blueGrey,
+                    size: 30.0,
+                  ),
+                ),
+              ),
+            )
+          : AnimatedOpacity(
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+              opacity: _opacity,
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Update Staff",
+                          style: TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 5),
+                      const Text(
+                        "Form for updating details of a staff member.",
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Expanded(
+                              child: _buildTextField("First Name", _firstName)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                              child: _buildTextField("Last Name", _lastName)),
+                        ],
+                      ),
+                      _buildTextField("Address", _address),
+                      _buildTextField("Contact Number", _contact,
+                          keyboard: TextInputType.phone),
+                      _buildTextField("Email", _email),
+                      _buildTextField("Job Position", _jobPosition),
+                      _buildTextField("Emergency Contact", _emergencyContact,
+                          keyboard: TextInputType.phone),
+                      const Text(
+                        "Birthdate",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      _buildDatePickerField("Birthdate", _birthdate,
+                          (date) => setState(() => _birthdate = date)),
+                      const Text(
+                        "Hire Date",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      _buildDatePickerField("Hire Date", _hireDate,
+                          (date) => setState(() => _hireDate = date)),
+                      _buildGenderDropdown(),
+                      SwitchListTile(
+                        title: const Text("Active Status"),
+                        value: _status ?? true,
+                        onChanged: (value) {
+                          setState(() {
+                            _status = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton(
+                            onPressed: _hasChanges() ? _updateStaff : null,
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    _hasChanges() ? Colors.blue : Colors.grey,
+                                minimumSize: const Size(90, 40)),
+                            child: const Text("Update",
+                                style: TextStyle(color: Colors.white)),
+                          ),
+                          const SizedBox(width: 10),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Cancel",
+                                style: TextStyle(color: Colors.grey)),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
             ),
-            _buildTextField("Address", _addressController),
-            _buildTextField("Contact Number", _contactController,
-                keyboard: TextInputType.phone),
-            _buildTextField("Email", _emailController),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
-        ),
-        ElevatedButton(
-          onPressed: _isUpdating ? null : _updateStaff,
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-          child: _isUpdating
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text("Update"),
-        ),
-      ],
     );
   }
 
   Widget _buildTextField(String label, TextEditingController controller,
       {TextInputType keyboard = TextInputType.text}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: TextFormField(
         controller: controller,
         keyboardType: keyboard,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(),
-        ),
+        decoration:
+            InputDecoration(labelText: label, border: OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
+      ),
+    );
+  }
+
+  Widget _buildDatePickerField(
+      String label, DateTime? date, Function(DateTime) onPicked) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: ListTile(
+        title: Text(
+            date == null ? 'Select $label' : DateFormat.yMMMd().format(date)),
+        trailing: const Icon(Icons.calendar_today),
+        onTap: () => _selectDate(context, onPicked),
+      ),
+    );
+  }
+
+  Widget _buildGenderDropdown() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: DropdownButtonFormField<String>(
+        value: _gender,
+        decoration: const InputDecoration(
+            labelText: "Gender", border: OutlineInputBorder()),
+        items: ["Male", "Female", "Other"]
+            .map((gender) =>
+                DropdownMenuItem(value: gender, child: Text(gender)))
+            .toList(),
+        onChanged: (value) => setState(() => _gender = value),
+        validator: (value) => value == null ? 'Required' : null,
       ),
     );
   }

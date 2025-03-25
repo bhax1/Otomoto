@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:otomoto/admin/screens/admin_login.dart';
 import 'package:otomoto/logic/connection_checker.dart';
 import 'package:provider/provider.dart';
@@ -46,7 +47,6 @@ class _LoginScreenState extends State<LoginScreen> {
           String storedPassword = staffDoc['password'];
 
           if (password == storedPassword) {
-            _showSuccessMessage("Login Successful!");
           } else {
             _showErrorMessage("Invalid credentials");
           }
@@ -60,14 +60,24 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showSuccessMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
-
   void _showErrorMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), backgroundColor: Colors.red));
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -83,49 +93,56 @@ class _LoginScreenState extends State<LoginScreen> {
             _login(); // Trigger login on Enter press
           }
         },
-        child: Stack(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Center(
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _Header(),
-                            const SizedBox(height: 20),
-                            _buildTextField(
-                                _idController, 'Staff ID', false, theme),
-                            const SizedBox(height: 20),
-                            _buildTextField(
-                                _passwordController, 'Password', true, theme),
-                            const SizedBox(height: 10),
-                            const _ForgotPass(),
-                            const SizedBox(height: 20),
-                            _buildSignInButton(theme),
-                          ],
-                        ),
-                      ),
-                    ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          child: _isLoading
+              ? Container(
+                  key: const ValueKey(
+                      1), // Ensure the loading screen gets a different key
+                  color: Colors.amber,
+                  child: const Center(
+                    child: SpinKitFadingCircle(color: Colors.amber, size: 50.0),
                   ),
+                )
+              : Stack(
+                  children: [
+                    Row(
+                      key: const ValueKey(
+                          2), // Ensure the main content gets a different key
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Center(
+                              child: Form(
+                                key: _formKey,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const _Header(),
+                                    const SizedBox(height: 20),
+                                    _buildTextField(_idController, 'Staff ID',
+                                        false, theme),
+                                    const SizedBox(height: 20),
+                                    _buildTextField(_passwordController,
+                                        'Password', true, theme),
+                                    const SizedBox(height: 10),
+                                    const _ForgotPass(),
+                                    const SizedBox(height: 20),
+                                    _buildSignInButton(theme),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        _buildSideImage(theme),
+                      ],
+                    ),
+                    _buildOfflineIndicator(),
+                  ],
                 ),
-                _buildSideImage(theme),
-              ],
-            ),
-            _buildOfflineIndicator(),
-            if (_isLoading)
-              Container(
-                color: Colors.black.withOpacity(0.5),
-                child: const Center(
-                  child: CircularProgressIndicator(color: Colors.amber),
-                ),
-              ),
-          ],
         ),
       ),
     );
@@ -163,14 +180,12 @@ class _LoginScreenState extends State<LoginScreen> {
       child: SizedBox(
         width: 200,
         child: ElevatedButton(
-          onPressed: _isLoading ? null : _login,
+          onPressed: _login,
           style: ElevatedButton.styleFrom(
             backgroundColor: theme.primaryColor,
             minimumSize: const Size(double.infinity, 50),
           ),
-          child: _isLoading
-              ? const CircularProgressIndicator(color: Colors.white)
-              : const Text("Sign in", style: TextStyle(color: Colors.black)),
+          child: const Text("Sign in", style: TextStyle(color: Colors.black)),
         ),
       ),
     );
@@ -254,9 +269,18 @@ class _ForgotPass extends StatelessWidget {
       children: [
         ElevatedButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AdminLogin()),
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    AdminLogin(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+              ),
             );
           },
           style: ElevatedButton.styleFrom(

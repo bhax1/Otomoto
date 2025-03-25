@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:otomoto/admin/pages/dashboard.dart';
 import 'package:otomoto/admin/pages/staff_management.dart';
 import 'package:otomoto/admin/pages/vehicle_management.dart';
@@ -12,6 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedPageIndex = 0;
+  bool _isLoading = true; // Track loading state
 
   final List<String> pageTitles = [
     'Dashboard',
@@ -37,13 +39,69 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  // Simulate loading for the entire content of the pages
+  Future<void> _loadData() async {
+    try {
+      // Assuming data loading functions for each page (you should replace these with real fetching logic)
+      Future<void> dashboardData = loadDashboardData();
+      Future<void> staffData = loadStaffData();
+      Future<void> vehicleData = loadVehicleData();
+
+      // Wait for all the data to be fetched
+      await Future.wait([dashboardData, staffData, vehicleData]);
+
+      setState(() {
+        _isLoading =
+            false; // Once everything is loaded, stop the loading indicator
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false; // In case of an error, stop loading
+      });
+      print("Error loading data: $e");
+    }
+  }
+
+  // Simulate loading data functions for each page
+  Future<void> loadDashboardData() async {
+    // Replace this with your actual data fetching logic (e.g., from Firebase or an API)
+    await Future.delayed(Duration(seconds: 2)); // Simulate delay
+    print("Dashboard data loaded");
+  }
+
+  Future<void> loadStaffData() async {
+    await Future.delayed(Duration(seconds: 2)); // Simulate delay
+    print("Staff data loaded");
+  }
+
+  Future<void> loadVehicleData() async {
+    await Future.delayed(Duration(seconds: 2)); // Simulate delay
+    print("Vehicle data loaded");
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: NavigationDrawer(onPageSelected: _onPageSelected),
       appBar: AppBar(
         title: Text(pageTitles[_selectedPageIndex]),
       ),
-      body: pageBodies[_selectedPageIndex],
+      body: _isLoading
+          ? Center(
+              child: SpinKitFadingCircle(
+                color: Theme.of(context).primaryColor,
+                size: 50.0,
+              ),
+            )
+          : IndexedStack(
+              index: _selectedPageIndex,
+              children: pageBodies,
+            ),
     );
   }
 }
