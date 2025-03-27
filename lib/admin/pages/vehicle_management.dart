@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:otomoto/admin/pages/vehicle_forms/add_vehicle.dart';
 import 'package:otomoto/admin/pages/vehicle_forms/delete_vehicle.dart';
+import 'package:otomoto/admin/pages/vehicle_forms/maintenance_vehicle.dart';
 import 'package:otomoto/admin/pages/vehicle_forms/update_vehicle.dart';
 import 'package:otomoto/admin/pages/vehicle_forms/view_vehicle.dart';
 
@@ -156,9 +157,14 @@ class _VehicleManagementState extends State<VehicleManagement> {
   void _maintenanceVehicle(int index) async {
     showDialog(
       context: context,
-      builder: (context) => DeleteVehicleDialog(
-        vehicleId: filteredVehicles[index]['id']!,
-        vehicleModel: filteredVehicles[index]['model']!,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: SizedBox(
+          width: 500,
+          child: MaintenanceVehicleForm(
+            vehicleId: filteredVehicles[index]['id']!,
+          ),
+        ),
       ),
     );
   }

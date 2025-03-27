@@ -159,6 +159,16 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
                         "Form for updating details of a vehicle.",
                         style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Vehicle ID: ${widget.vehicleId}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
                       _buildTextField("Brand", _brandController),
                       _buildTextField("Model", _modelController),
                       _buildTextField("Plate Number", _plateNumberController),
@@ -168,18 +178,12 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
                           keyboard: TextInputType.number),
                       _buildDropdownField("Status", _status, [
                         "Available",
-                        "Not Available",
-                        "Under Maintenance",
-                        "Rented"
+                        "Unavailable",
                       ]),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Cancel"),
-                          ),
                           ElevatedButton(
                             onPressed: _isUpdating ? null : _updateVehicle,
                             style: ElevatedButton.styleFrom(
@@ -190,7 +194,14 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
                                     height: 16,
                                     child: CircularProgressIndicator(
                                         strokeWidth: 2))
-                                : const Text("Update"),
+                                : const Text("Update",
+                                    style: TextStyle(color: Colors.white)),
+                          ),
+                          const SizedBox(width: 5),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Cancel",
+                                style: TextStyle(color: Colors.grey)),
                           ),
                         ],
                       ),
@@ -203,12 +214,13 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
   }
 
   Widget _buildTextField(String label, TextEditingController controller,
-      {TextInputType keyboard = TextInputType.text}) {
+      {TextInputType keyboard = TextInputType.text, bool readOnly = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: TextFormField(
         controller: controller,
         keyboardType: keyboard,
+        readOnly: readOnly,
         decoration:
             InputDecoration(labelText: label, border: OutlineInputBorder()),
         validator: (value) =>

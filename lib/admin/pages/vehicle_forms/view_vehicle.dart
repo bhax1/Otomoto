@@ -111,6 +111,8 @@ class _ViewVehicleFormState extends State<ViewVehicleForm> {
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
+                        _buildInfoRow(Icons.numbers_rounded,
+                            "Vehicle ID: ${widget.vehicleId}"),
                         _buildInfoRow(
                           Icons.directions_car,
                           "Brand: ${vehicleData!['brand']}",

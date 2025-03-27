@@ -111,6 +111,8 @@ class _ViewStaffFormState extends State<ViewStaffForm> {
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
+                        _buildInfoRow(Icons.numbers_rounded,
+                            "Staff ID: ${widget.staffId}"),
                         _buildInfoRow(Icons.person,
                             "Name: ${staffData!['firstname']} ${staffData!['lastname']}"),
                         _buildInfoRow(Icons.work,

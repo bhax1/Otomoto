@@ -261,6 +261,15 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
                         "Form for updating details of a staff member.",
                         style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Staff ID: ${widget.staffId}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green,
+                        ),
+                      ),
                       const SizedBox(height: 5),
                       Row(
                         children: [
@@ -332,12 +341,13 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
   }
 
   Widget _buildTextField(String label, TextEditingController controller,
-      {TextInputType keyboard = TextInputType.text}) {
+      {TextInputType keyboard = TextInputType.text, bool readOnly = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: TextFormField(
         controller: controller,
         keyboardType: keyboard,
+        readOnly: readOnly,
         decoration:
             InputDecoration(labelText: label, border: OutlineInputBorder()),
         validator: (value) =>

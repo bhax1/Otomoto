@@ -177,11 +177,6 @@ class _AddVehicleFormState extends State<AddVehicleForm> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancel",
-                            style: TextStyle(color: Colors.grey)),
-                      ),
                       ElevatedButton(
                         onPressed: _isLoading ? null : _submitForm,
                         style: ElevatedButton.styleFrom(
@@ -190,6 +185,12 @@ class _AddVehicleFormState extends State<AddVehicleForm> {
                         ),
                         child: const Text("Submit",
                             style: TextStyle(color: Colors.white)),
+                      ),
+                      const SizedBox(width: 5),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Cancel",
+                            style: TextStyle(color: Colors.grey)),
                       ),
                     ],
                   )
