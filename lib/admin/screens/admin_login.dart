@@ -116,7 +116,7 @@ class _AdminLoginState extends State<AdminLogin> {
                       1), // Ensure the loading screen gets a different key
                   color: Colors.amber,
                   child: const Center(
-                    child: SpinKitFadingCircle(color: Colors.amber, size: 50.0),
+                    child: SpinKitFadingCircle(color: Colors.white, size: 50.0),
                   ),
                 )
               : Stack(
