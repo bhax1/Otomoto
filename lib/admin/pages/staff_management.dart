@@ -34,7 +34,7 @@ class _StaffManagementState extends State<StaffManagement> {
         setState(() {
           staffList = snapshot.docs
               .map((doc) => {
-                    'id': doc.id,
+                    'id': doc['staff_id'].toString(),
                     'firstname': doc['firstname'] ?? '',
                     'lastname': doc['lastname'] ?? '',
                     'job_position': doc['job_position'] ?? '',
@@ -268,12 +268,12 @@ class StaffDataSource extends DataTableSource {
     bool isActive = staffMember['status'] == 'Active';
 
     return DataRow(cells: [
-      DataCell(Text(staffMember['id'].toString())),
-      DataCell(Text(staffMember['firstname'].toString())),
-      DataCell(Text(staffMember['lastname'].toString())),
-      DataCell(Text(staffMember['job_position'].toString())),
-      DataCell(Text(staffMember['contact'].toString())),
-      DataCell(Text(staffMember['email'].toString())),
+      DataCell(Text(staffMember['id'])),
+      DataCell(Text(staffMember['firstname'])),
+      DataCell(Text(staffMember['lastname'])),
+      DataCell(Text(staffMember['job_position'])),
+      DataCell(Text(staffMember['contact'])),
+      DataCell(Text(staffMember['email'])),
       DataCell(
         Text(
           staffMember['status']!,

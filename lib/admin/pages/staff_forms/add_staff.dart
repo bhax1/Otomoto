@@ -49,16 +49,17 @@ class _AddStaffFormState extends State<AddStaffForm> {
     setState(() => _isLoading = true);
     try {
       final staffCollection = FirebaseFirestore.instance.collection('staffs');
-      final snapshot = await staffCollection
-          .orderBy(FieldPath.documentId, descending: true)
+      final lastStaff = await staffCollection
+          .orderBy('staff_id', descending: true)
           .limit(1)
           .get();
+      final nextId = (lastStaff.docs.isNotEmpty
+              ? lastStaff.docs.first['staff_id'] as int
+              : 0) +
+          1;
 
-      int nextId = snapshot.docs.isEmpty
-          ? 1
-          : (int.tryParse(snapshot.docs.first.id) ?? -1) + 1;
-
-      await staffCollection.doc(nextId.toString()).set({
+      await staffCollection.add({
+        'staff_id': nextId,
         'firstname': _firstName.text,
         'lastname': _lastName.text,
         'address': _address.text,

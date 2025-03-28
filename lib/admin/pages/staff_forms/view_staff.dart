@@ -24,12 +24,18 @@ class _ViewStaffFormState extends State<ViewStaffForm> {
 
   Future<void> _fetchStaffDetails() async {
     try {
-      DocumentSnapshot staffDoc = await FirebaseFirestore.instance
+      final staffId = int.tryParse(widget.staffId);
+      if (staffId == null) throw 'Invalid staff ID';
+
+      QuerySnapshot staffQuery = await FirebaseFirestore.instance
           .collection('staffs')
-          .doc(widget.staffId)
+          .where("staff_id", isEqualTo: staffId)
           .get();
 
-      if (staffDoc.exists && staffDoc.data() != null) {
+      if (staffQuery.docs.isNotEmpty) {
+        // Get the first document
+        DocumentSnapshot staffDoc = staffQuery.docs.first;
+
         setState(() {
           staffData = staffDoc.data() as Map<String, dynamic>;
           isLoading = false;

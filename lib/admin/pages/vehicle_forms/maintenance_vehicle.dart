@@ -4,9 +4,15 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 
 class MaintenanceVehicleForm extends StatefulWidget {
-  final String vehicleId;
+  final String vehicleId, brand, model, plateNumber;
 
-  const MaintenanceVehicleForm({super.key, required this.vehicleId});
+  const MaintenanceVehicleForm({
+    super.key,
+    required this.vehicleId,
+    required this.brand,
+    required this.model,
+    required this.plateNumber,
+  });
 
   @override
   _MaintenanceVehicleFormState createState() => _MaintenanceVehicleFormState();
@@ -14,31 +20,19 @@ class MaintenanceVehicleForm extends StatefulWidget {
 
 class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
   final _formKey = GlobalKey<FormState>();
-  final _vehicleId = TextEditingController();
-  final _plateNum = TextEditingController();
-  final _brand = TextEditingController();
-  final _model = TextEditingController();
-  DateTime? _start;
-  DateTime? _end;
-  String? _maintenance;
+  DateTime? _start, _end;
+  final List<String> _selectedMaintenance = [];
   bool _isLoading = false;
-  double _opacity = 0.0;
+  bool _showErrors = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchVehicleData();
-  }
-
-  Future<void> _selectDate(BuildContext context, Function(DateTime) onPicked,
-      {bool isStart = false}) async {
+  Future<void> _selectDate(BuildContext context, bool isStart) async {
     DateTime now = DateTime.now();
     DateTime firstDate = isStart ? now : (_start ?? now);
 
     final picked = await showDatePicker(
       context: context,
       initialDate: firstDate,
-      firstDate: firstDate, // Enforces rule: Start date must be today or later
+      firstDate: firstDate,
       lastDate: DateTime(2100),
     );
 
@@ -46,101 +40,48 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
       setState(() {
         if (isStart) {
           _start = picked;
-          if (_end != null && _end!.isBefore(_start!)) {
-            _end = null; // Reset end date if it's invalid
-          }
+          if (_end != null && _end!.isBefore(_start!)) _end = null;
         } else {
           _end = picked;
         }
       });
-      onPicked(picked);
-    }
-  }
-
-  Future<void> _fetchVehicleData() async {
-    setState(() {
-      _isLoading = true;
-      _opacity = 0.0;
-    });
-
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('vehicles')
-          .doc(widget.vehicleId)
-          .get();
-
-      if (doc.exists && doc.data() != null) {
-        final data = doc.data() as Map<String, dynamic>;
-        _vehicleId.text = widget.vehicleId;
-        _plateNum.text = data['plate_num'] ?? '';
-        _brand.text = data['brand'] ?? '';
-        _model.text = data['model'] ?? '';
-
-        setState(() {
-          _isLoading = false;
-        });
-
-        // Trigger opacity transition separately after UI rebuilds
-        Future.delayed(const Duration(milliseconds: 100), () {
-          if (mounted) {
-            setState(() {
-              _opacity = 1.0;
-            });
-          }
-        });
-      } else {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("No data found.")));
-      }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to fetch vehicle data.")));
     }
   }
 
   Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate() ||
-        _start == null ||
-        _end == null ||
-        _maintenance == null) {
+    if (_start == null || _end == null || _selectedMaintenance.isEmpty) {
+      setState(() => _showErrors = true); // Show error messages
       return;
     }
 
-    bool? confirm = await _showConfirmationDialog();
-    if (confirm != true) return;
+    if (!await _showConfirmationDialog()) return;
 
     setState(() => _isLoading = true);
     try {
-      final vehicleCollection =
+      final maintenanceCollection =
           FirebaseFirestore.instance.collection('maintenance');
-      final snapshot = await vehicleCollection
-          .orderBy(FieldPath.documentId, descending: true)
+      final lastVehicle = await maintenanceCollection
+          .orderBy('maintenance_id', descending: true)
           .limit(1)
           .get();
 
-      int nextId = snapshot.docs.isEmpty
-          ? 1
-          : (int.tryParse(snapshot.docs.first.id) ?? -1) + 1;
+      final nextId = (lastVehicle.docs.isNotEmpty
+              ? lastVehicle.docs.first['maintenance_id'] as int
+              : 0) +
+          1;
 
-      await vehicleCollection.doc(nextId.toString()).set({
-        'vehicle_id': "1",
+      await maintenanceCollection.add({
+        'maintenance_id': nextId,
+        'vehicle_id': int.tryParse(widget.vehicleId),
         'start_date': _start?.toIso8601String(),
         'end_date': _end?.toIso8601String(),
-        'maintenance_type': _maintenance,
+        'maintenance_type': _selectedMaintenance,
         'created_at': FieldValue.serverTimestamp(),
         'lastUpdated': FieldValue.serverTimestamp(),
+        'status': "Active",
       });
 
-      await FirebaseFirestore.instance
-          .collection('vehicles')
-          .doc(widget.vehicleId)
-          .update({
-        'status': "Under Maintenance",
-      });
-
-      _showSuccessDialog("${_model.text} ${_plateNum.text}");
+      _showSuccessDialog();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Failed to schedule maintenance.")),
@@ -150,52 +91,39 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
     }
   }
 
-  Future<bool?> _showConfirmationDialog() {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Confirm Update"),
-        content: const Text(
-            "Are you sure you want to schedule a maintenance on this vehicle?"),
-        actions: [
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              onPressed: () => Navigator.pop(context, true),
-              child:
-                  const Text("Confirm", style: TextStyle(color: Colors.white))),
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child:
-                  const Text("Cancel", style: TextStyle(color: Colors.grey))),
-        ],
-      ),
-    );
+  Future<bool> _showConfirmationDialog() async {
+    return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Confirm Update"),
+            content: const Text(
+                "Are you sure you want to schedule this maintenance?"),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text("Cancel")),
+              ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text("Confirm")),
+            ],
+          ),
+        ) ??
+        false;
   }
 
-  void _showSuccessDialog(String vehicleName) {
+  void _showSuccessDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text("Staff Updated Successfully!"),
-        content: Row(
-          children: [
-            const Icon(Icons.info_outline, color: Colors.blue),
-            const SizedBox(width: 8),
-            Expanded(
-                child: Text(
-                    'Vehicle maintenance for "$vehicleName" scheduled successfully.')),
-          ],
-        ),
+        title: const Text("Success"),
+        content: Text(
+            'Maintenance for ${widget.model} ${widget.plateNumber} scheduled successfully.'),
         actions: [
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            child: const Text("OK"),
-          ),
+              onPressed: () =>
+                  Navigator.popUntil(context, (route) => route.isFirst),
+              child: const Text("OK")),
         ],
       ),
     );
@@ -206,9 +134,9 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: _isLoading
-          ? SingleChildScrollView(
+          ? const SingleChildScrollView(
               child: SizedBox(
-                child: const Center(
+                child: Center(
                   child: SpinKitThreeBounce(
                     color: Colors.blueGrey,
                     size: 30.0,
@@ -216,137 +144,216 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
                 ),
               ),
             )
-          : AnimatedOpacity(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-              opacity: _opacity,
-              child: Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          : Form(
+              key: _formKey,
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  const Text("Maintenance Schedule",
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  const Text(
+                    "Form for scheduling maintenance of a vehicle.",
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
                     children: [
-                      const Text("Maintenance Schedule",
-                          style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 5),
-                      const Text(
-                        "Form for scheduling maintenance of a vehicle.",
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      Expanded(
+                        child:
+                            _buildReadOnlyField("Vehicle ID", widget.vehicleId),
                       ),
-                      const SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField("Vehicle ID", _vehicleId,
-                                readOnly: true),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                              child: _buildTextField("Plate Number", _plateNum,
-                                  readOnly: true)),
-                        ],
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildReadOnlyField(
+                            "Plate Number", widget.plateNumber),
                       ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField("Brand", _brand,
-                                readOnly: true),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                              child: _buildTextField("Model", _model,
-                                  readOnly: true)),
-                        ],
-                      ),
-                      const Text(
-                        "Start",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      _buildDatePickerField("Start", _start,
-                          (date) => setState(() => _start = date),
-                          isStart: true),
-                      const Text(
-                        "End",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      _buildDatePickerField(
-                          "End", _end, (date) => setState(() => _end = date)),
-                      _buildMaintenanceDropdown(),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                            onPressed: _submitForm,
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                minimumSize: const Size(90, 40)),
-                            child: const Text("Submit",
-                                style: TextStyle(color: Colors.white)),
-                          ),
-                          const SizedBox(width: 10),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Cancel",
-                                style: TextStyle(color: Colors.grey)),
-                          ),
-                        ],
-                      )
                     ],
                   ),
-                ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildReadOnlyField("Brand", widget.brand),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildReadOnlyField("Model", widget.model),
+                      ),
+                    ],
+                  ),
+                  _buildDatePicker("Start Date", _start, true),
+                  _buildDatePicker("End Date", _end, false),
+                  const SizedBox(height: 12),
+                  _buildMaintenanceSelection(),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                          onPressed: _submitForm, child: const Text("Submit")),
+                      const SizedBox(width: 10),
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Cancel")),
+                    ],
+                  ),
+                ],
               ),
             ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller,
-      {TextInputType keyboard = TextInputType.text, bool readOnly = false}) {
+  Widget _buildReadOnlyField(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
-        controller: controller,
-        keyboardType: keyboard,
-        readOnly: readOnly,
+        initialValue: value,
+        readOnly: true,
         decoration:
             InputDecoration(labelText: label, border: OutlineInputBorder()),
-        validator: (value) =>
-            value == null || value.isEmpty ? 'Required' : null,
       ),
     );
   }
 
-  Widget _buildDatePickerField(
-      String label, DateTime? date, Function(DateTime) onPicked,
-      {bool isStart = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: ListTile(
-        title: Text(
-            date == null ? 'Select $label' : DateFormat.yMMMd().format(date)),
-        trailing: const Icon(Icons.calendar_today),
-        onTap: () => _selectDate(context, onPicked, isStart: isStart),
-      ),
+  Widget _buildDatePicker(String label, DateTime? date, bool isStart) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          title: Text(
+            date == null ? 'Select $label' : DateFormat.yMMMd().format(date),
+          ),
+          trailing: const Icon(Icons.calendar_today),
+          onTap: () => _selectDate(context, isStart),
+        ),
+        if (_showErrors &&
+            date == null) // Only show error after Submit is clicked
+          const Padding(
+            padding: EdgeInsets.only(left: 16),
+            child: Text(
+              "Required",
+              style: TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+      ],
     );
   }
 
-  Widget _buildMaintenanceDropdown() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: DropdownButtonFormField<String>(
-        value: _maintenance,
-        decoration: const InputDecoration(
-            labelText: "Maintenance Type", border: OutlineInputBorder()),
-        items: ["Oil Change", "Coolant Change", "Cleaning"]
-            .map((gender) =>
-                DropdownMenuItem(value: gender, child: Text(gender)))
-            .toList(),
-        onChanged: (value) => setState(() => _maintenance = value),
-        validator: (value) => value == null ? 'Required' : null,
+  Widget _buildMaintenanceSelection() {
+    const maintenanceOptions = ["Oil Change", "Coolant Change", "Cleaning"];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Maintenance Type",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () async {
+            final selectedValues = await showDialog<Set<String>>(
+              context: context,
+              builder: (context) => MultiSelectDialog(
+                options: maintenanceOptions,
+                selectedValues: _selectedMaintenance.toSet(),
+              ),
+            );
+
+            if (selectedValues != null) {
+              setState(() {
+                _selectedMaintenance.clear();
+                _selectedMaintenance.addAll(selectedValues);
+              });
+            }
+          },
+          child: InputDecorator(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              suffixIcon: const Icon(Icons.arrow_drop_down),
+            ),
+            child: Text(
+              _selectedMaintenance.isEmpty
+                  ? "Select Maintenance Types"
+                  : _selectedMaintenance.join(", "),
+              style: TextStyle(
+                fontSize: 16,
+                color:
+                    _selectedMaintenance.isEmpty ? Colors.grey : Colors.black,
+              ),
+            ),
+          ),
+        ),
+        if (_showErrors &&
+            _selectedMaintenance.isEmpty) // Only show after Submit
+          const Padding(
+            padding: EdgeInsets.only(left: 16, top: 4),
+            child: Text(
+              "Required",
+              style: TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class MultiSelectDialog extends StatefulWidget {
+  final List<String> options;
+  final Set<String> selectedValues;
+
+  const MultiSelectDialog(
+      {required this.options, required this.selectedValues, super.key});
+
+  @override
+  _MultiSelectDialogState createState() => _MultiSelectDialogState();
+}
+
+class _MultiSelectDialogState extends State<MultiSelectDialog> {
+  late Set<String> _tempSelectedValues;
+
+  @override
+  void initState() {
+    super.initState();
+    _tempSelectedValues = Set.from(widget.selectedValues);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Select Maintenance Types"),
+      content: SingleChildScrollView(
+        child: Column(
+          children: widget.options
+              .map(
+                (option) => CheckboxListTile(
+                  title: Text(option),
+                  value: _tempSelectedValues.contains(option),
+                  onChanged: (selected) {
+                    setState(() {
+                      selected == true
+                          ? _tempSelectedValues.add(option)
+                          : _tempSelectedValues.remove(option);
+                    });
+                  },
+                ),
+              )
+              .toList(),
+        ),
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, null),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, _tempSelectedValues),
+          child: const Text("Confirm"),
+        ),
+      ],
     );
   }
 }

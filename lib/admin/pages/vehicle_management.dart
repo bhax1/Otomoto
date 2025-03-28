@@ -36,7 +36,7 @@ class _VehicleManagementState extends State<VehicleManagement> {
         setState(() {
           vehicleList = snapshot.docs
               .map((doc) => {
-                    'id': doc.id,
+                    'id': doc['vehicle_id'].toString(),
                     'brand': doc['brand'] ?? '',
                     'model': doc['model'] ?? '',
                     'plate_num': doc['plate_num'] ?? '',
@@ -81,9 +81,6 @@ class _VehicleManagementState extends State<VehicleManagement> {
                   vehicle['color']!
                       .toLowerCase()
                       .contains(query.toLowerCase()) ||
-                  vehicle['rental_rate']!
-                      .toLowerCase()
-                      .contains(query.toLowerCase()) ||
                   vehicle['plate_num']!
                       .toLowerCase()
                       .contains(query.toLowerCase()))
@@ -121,15 +118,6 @@ class _VehicleManagementState extends State<VehicleManagement> {
     );
   }
 
-  void _viewVehicle(int index) {
-    showDialog(
-      context: context,
-      builder: (context) => ViewVehicleForm(
-        vehicleId: filteredVehicles[index]['id']!,
-      ),
-    );
-  }
-
   void _updateVehicle(int index) async {
     showDialog(
       context: context,
@@ -139,7 +127,30 @@ class _VehicleManagementState extends State<VehicleManagement> {
             width: 500,
             child: UpdateVehicleForm(
               vehicleId: filteredVehicles[index]['id']!,
+              brand: filteredVehicles[index]['brand']!,
+              model: filteredVehicles[index]['model']!,
+              plateNumber: filteredVehicles[index]['plate_num']!,
+              bodyType: filteredVehicles[index]['body_type']!,
+              color: filteredVehicles[index]['color']!,
+              rentalRate: filteredVehicles[index]['rental_rate']!,
+              status: filteredVehicles[index]['status']!,
             )),
+      ),
+    );
+  }
+
+  void _viewVehicle(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => ViewVehicleForm(
+        vehicleId: filteredVehicles[index]['id']!,
+        brand: filteredVehicles[index]['brand']!,
+        model: filteredVehicles[index]['model']!,
+        plateNumber: filteredVehicles[index]['plate_num']!,
+        bodyType: filteredVehicles[index]['body_type']!,
+        color: filteredVehicles[index]['color']!,
+        rentalRate: filteredVehicles[index]['rental_rate']!,
+        status: filteredVehicles[index]['status']!,
       ),
     );
   }
@@ -149,7 +160,9 @@ class _VehicleManagementState extends State<VehicleManagement> {
       context: context,
       builder: (context) => DeleteVehicleDialog(
         vehicleId: filteredVehicles[index]['id']!,
-        vehicleModel: filteredVehicles[index]['model']!,
+        brand: filteredVehicles[index]['brand']!,
+        model: filteredVehicles[index]['model']!,
+        plateNumber: filteredVehicles[index]['plate_num']!,
       ),
     );
   }
@@ -163,6 +176,9 @@ class _VehicleManagementState extends State<VehicleManagement> {
           width: 500,
           child: MaintenanceVehicleForm(
             vehicleId: filteredVehicles[index]['id']!,
+            brand: filteredVehicles[index]['brand']!,
+            model: filteredVehicles[index]['model']!,
+            plateNumber: filteredVehicles[index]['plate_num']!,
           ),
         ),
       ),
@@ -292,14 +308,24 @@ class VehicleDataSource extends DataTableSource {
     if (index >= vehicles.length) return null;
     final vehicle = vehicles[index];
     return DataRow(cells: [
-      DataCell(Text(vehicle['id'].toString())),
-      DataCell(Text(vehicle['brand'].toString())),
-      DataCell(Text(vehicle['model'].toString())),
-      DataCell(Text(vehicle['plate_num'].toString())),
-      DataCell(Text(vehicle['body_type'].toString())),
-      DataCell(Text(vehicle['color'].toString())),
+      DataCell(Text(vehicle['id'])),
+      DataCell(Text(vehicle['brand'])),
+      DataCell(Text(vehicle['model'])),
+      DataCell(Text(vehicle['plate_num'])),
+      DataCell(Text(vehicle['body_type'])),
+      DataCell(Text(vehicle['color'])),
       DataCell(Text("₱ ${vehicle['rental_rate']}")),
-      DataCell(Text(vehicle['status'].toString())),
+      DataCell(Text(
+        vehicle['status'],
+        style: TextStyle(
+          color: vehicle['status'] == 'Available'
+              ? Colors.green
+              : vehicle['status'] == 'Unavailable'
+                  ? Colors.red
+                  : Colors.orange,
+          fontWeight: FontWeight.bold,
+        ),
+      )),
       DataCell(Row(
         children: [
           _buildIconButton(

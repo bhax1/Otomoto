@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:otomoto/admin/pages/dashboard.dart';
 import 'package:otomoto/admin/pages/staff_management.dart';
+import 'package:otomoto/admin/pages/vehicle_maintenance.dart';
 import 'package:otomoto/admin/pages/vehicle_management.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     DashboardBody(),
     StaffManagement(),
     VehicleManagement(),
-    Center(child: Text('Maintenance')),
+    VehicleMaintenance(),
     Center(child: Text('Profile Settings Page')),
   ];
 

@@ -62,13 +62,17 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
     });
 
     try {
-      final doc = await FirebaseFirestore.instance
+      final staffId = int.tryParse(widget.staffId);
+      if (staffId == null) throw Exception('Invalid staff ID');
+
+      final querySnapshot = await FirebaseFirestore.instance
           .collection('staffs')
-          .doc(widget.staffId)
+          .where("staff_id", isEqualTo: staffId)
           .get();
 
-      if (doc.exists && doc.data() != null) {
-        final data = doc.data() as Map<String, dynamic>;
+      if (querySnapshot.docs.isNotEmpty) {
+        final data = querySnapshot.docs.first.data();
+
         _firstName.text = data['firstname'] ?? '';
         _lastName.text = data['lastname'] ?? '';
         _address.text = data['address'] ?? '';
@@ -77,10 +81,10 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
         _jobPosition.text = data['job_position'] ?? '';
         _emergencyContact.text = data['emergency_contact'] ?? '';
         _birthdate = data['birthdate'] != null
-            ? DateTime.parse(data['birthdate'])
+            ? DateTime.tryParse(data['birthdate'])
             : null;
         _hireDate = data['hire_date'] != null
-            ? DateTime.parse(data['hire_date'])
+            ? DateTime.tryParse(data['hire_date'])
             : null;
         _gender = data['gender'];
         _status = data['status'];
@@ -118,8 +122,8 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to fetch staff data.")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Failed to fetch staff data: ${e.toString()}")));
     }
   }
 
