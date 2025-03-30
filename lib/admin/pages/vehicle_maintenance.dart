@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:otomoto/admin/pages/maintenance_forms/cancel_maintenance.dart';
 
 class VehicleMaintenance extends StatefulWidget {
   const VehicleMaintenance({super.key});
@@ -20,7 +21,8 @@ class _VehicleMaintenanceState extends State<VehicleMaintenance> {
   @override
   void initState() {
     super.initState();
-    _dataSource = MaintenanceDataSource([]);
+    _dataSource = MaintenanceDataSource([], _viewMaintenance,
+        _updateMaintenance, _cancelMaintenance, _doneMaintenance);
     _fetchMaintenanceRecords();
   }
 
@@ -41,7 +43,12 @@ class _VehicleMaintenanceState extends State<VehicleMaintenance> {
               .toList();
 
           filteredMaintenance = List.from(maintenanceList);
-          _dataSource = MaintenanceDataSource(filteredMaintenance);
+          _dataSource = MaintenanceDataSource(
+              filteredMaintenance,
+              _viewMaintenance,
+              _updateMaintenance,
+              _cancelMaintenance,
+              _doneMaintenance);
           _isLoading = false;
         });
       },
@@ -67,9 +74,26 @@ class _VehicleMaintenanceState extends State<VehicleMaintenance> {
                       .contains(query.toLowerCase()))
               .toList();
 
-      _dataSource = MaintenanceDataSource(filteredMaintenance);
+      _dataSource = MaintenanceDataSource(filteredMaintenance, _viewMaintenance,
+          _updateMaintenance, _cancelMaintenance, _doneMaintenance);
     });
   }
+
+  void _viewMaintenance(int index) {}
+
+  void _updateMaintenance(int index) {}
+
+  void _cancelMaintenance(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => CancelMaintenanceForm(
+        maintenanceId: filteredMaintenance[index]['id']!,
+        vehicleId: filteredMaintenance[index]['vehicle_id']!,
+      ),
+    );
+  }
+
+  void _doneMaintenance(int index) {}
 
   @override
   Widget build(BuildContext context) {
@@ -143,6 +167,7 @@ class _VehicleMaintenanceState extends State<VehicleMaintenance> {
                     DataColumn(label: Text('Start Date')),
                     DataColumn(label: Text('End Date')),
                     DataColumn(label: Text('Status')),
+                    DataColumn(label: Text('Actions')),
                   ],
                   source: _dataSource,
                   rowsPerPage: rowsPerPage,
@@ -160,8 +185,13 @@ class _VehicleMaintenanceState extends State<VehicleMaintenance> {
 class MaintenanceDataSource extends DataTableSource {
   final List<Map<String, dynamic>> maintenanceRecords;
   final DateFormat dateFormat = DateFormat('MMMM d, y');
+  final Function(int) onView;
+  final Function(int) onUpdate;
+  final Function(int) onCancel;
+  final Function(int) onDone;
 
-  MaintenanceDataSource(this.maintenanceRecords);
+  MaintenanceDataSource(this.maintenanceRecords, this.onView, this.onUpdate,
+      this.onCancel, this.onDone);
 
   @override
   DataRow? getRow(int index) {
@@ -179,7 +209,26 @@ class MaintenanceDataSource extends DataTableSource {
       DataCell(Text(record['maintenance_type'].toString())),
       DataCell(Text(formatDate(record['start_date']))),
       DataCell(Text(formatDate(record['end_date']))),
-      DataCell(Text(record['status'].toString())),
+      DataCell(Text(
+        record['status'].toString(),
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: _getStatusColor(record['status'].toString()),
+        ),
+      )),
+      DataCell(Row(
+        children: [
+          _buildIconButton(
+              Icons.visibility, Colors.orange, () => onView(index)),
+          if (record['status'] != "Cancelled" &&
+              record['status'] != "Done") ...[
+            _buildIconButton(Icons.update, Colors.blue, () => onUpdate(index)),
+            _buildIconButton(
+                Icons.cancel_outlined, Colors.red, () => onCancel(index)),
+            _buildIconButton(Icons.done, Colors.green, () => onDone(index)),
+          ]
+        ],
+      )),
     ]);
   }
 
@@ -191,4 +240,24 @@ class MaintenanceDataSource extends DataTableSource {
 
   @override
   int get selectedRowCount => 0;
+
+  Widget _buildIconButton(IconData icon, Color color, VoidCallback onPressed) {
+    return IconButton(
+      icon: Icon(icon, color: color),
+      onPressed: onPressed,
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case "Done":
+        return Colors.green;
+      case "Active":
+        return Colors.blue;
+      case "Cancelled":
+        return Colors.red;
+      default:
+        return Colors.black;
+    }
+  }
 }

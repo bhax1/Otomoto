@@ -1,3 +1,4 @@
+import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -35,6 +36,10 @@ class _AddStaffFormState extends State<AddStaffForm> {
     if (picked != null) onPicked(picked);
   }
 
+  String hashPassword(String password) {
+    return BCrypt.hashpw(password, BCrypt.gensalt()); // Hash with salt
+  }
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate() ||
         _birthdate == null ||
@@ -58,6 +63,8 @@ class _AddStaffFormState extends State<AddStaffForm> {
               : 0) +
           1;
 
+      String hashedPassword = hashPassword("123"); // Securely hash password
+
       await staffCollection.add({
         'staff_id': nextId,
         'firstname': _firstName.text,
@@ -70,7 +77,7 @@ class _AddStaffFormState extends State<AddStaffForm> {
         'hire_date': _hireDate?.toIso8601String(),
         'gender': _gender,
         'emergency_contact': _emergencyContact.text,
-        'password': "123",
+        'password': hashedPassword, // Store hashed password
         'created_at': FieldValue.serverTimestamp(),
         'lastUpdated': FieldValue.serverTimestamp(),
         'status': true,

@@ -8,10 +8,18 @@ import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize window manager
+  await windowManager.ensureInitialized();
+
   windowManager.setMinimumSize(const Size(1050, 600));
+  windowManager.setSize(const Size(1050, 600)); // Set default size
+  windowManager.setAlignment(Alignment.center); // Center the window
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(
     MultiProvider(
       providers: [

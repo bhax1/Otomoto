@@ -1,3 +1,4 @@
+import 'package:bcrypt/bcrypt.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,30 +35,63 @@ class _LoginScreenState extends State<LoginScreen> {
     if (isOffline) {
       _showErrorMessage("No Internet Connection!");
       setState(() => _isLoading = false);
-    } else {
-      try {
-        DocumentSnapshot staffDoc = await FirebaseFirestore.instance
-            .collection('staffs')
-            .doc(staffId)
-            .get();
-
-        setState(() => _isLoading = false);
-
-        if (staffDoc.exists) {
-          String storedPassword = staffDoc['password'];
-
-          if (password == storedPassword) {
-          } else {
-            _showErrorMessage("Invalid credentials");
-          }
-        } else {
-          _showErrorMessage("Staff ID not found!");
-        }
-      } catch (e) {
-        setState(() => _isLoading = false);
-        _showErrorMessage("Login failed: ${e.toString()}");
-      }
+      return;
     }
+
+    try {
+      final staffCollection = FirebaseFirestore.instance.collection('staffs');
+      final int? staffIdInt = int.tryParse(staffId);
+
+      if (staffIdInt == null) {
+        _showErrorMessage("Invalid Staff ID format!");
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final querySnapshot = await staffCollection
+          .where('staff_id', isEqualTo: staffIdInt)
+          .limit(1)
+          .get();
+
+      setState(() => _isLoading = false);
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final staffDoc = querySnapshot.docs.first;
+        String storedHash = staffDoc['password'];
+
+        if (BCrypt.checkpw(password, storedHash)) {
+          _showSuccessMessage("Login successful!");
+          // Proceed with navigation or session setup
+        } else {
+          _showErrorMessage("Invalid credentials");
+        }
+      } else {
+        _showErrorMessage("Staff ID not found!");
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showErrorMessage("Login failed: ${e.toString()}");
+    }
+  }
+
+  void _showSuccessMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Success"),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showErrorMessage(String message) {
@@ -101,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       1), // Ensure the loading screen gets a different key
                   color: Colors.amber,
                   child: const Center(
-                    child: SpinKitFadingCircle(color: Colors.amber, size: 50.0),
+                    child: SpinKitFadingCircle(color: Colors.white, size: 50.0),
                   ),
                 )
               : Stack(

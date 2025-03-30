@@ -140,23 +140,30 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
 
     setState(() => _isLoading = true);
     try {
-      await FirebaseFirestore.instance
-          .collection('staffs')
-          .doc(widget.staffId)
-          .update({
-        'firstname': _firstName.text,
-        'lastname': _lastName.text,
-        'address': _address.text,
-        'contact_num': _contact.text,
-        'email': _email.text,
-        'job_position': _jobPosition.text,
-        'birthdate': _birthdate?.toIso8601String(),
-        'hire_date': _hireDate?.toIso8601String(),
-        'gender': _gender,
-        'status': _status,
-        'emergency_contact': _emergencyContact.text,
-        'lastUpdated': FieldValue.serverTimestamp(),
-      });
+      final staffCollection = FirebaseFirestore.instance.collection('staffs');
+      final staffId = int.tryParse(widget.staffId);
+
+      final querySnapshot = await staffCollection
+          .where('staff_id', isEqualTo: staffId)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        await staffCollection.doc(querySnapshot.docs.first.id).update({
+          'firstname': _firstName.text,
+          'lastname': _lastName.text,
+          'address': _address.text,
+          'contact_num': _contact.text,
+          'email': _email.text,
+          'job_position': _jobPosition.text,
+          'birthdate': _birthdate?.toIso8601String(),
+          'hire_date': _hireDate?.toIso8601String(),
+          'gender': _gender,
+          'status': _status,
+          'emergency_contact': _emergencyContact.text,
+          'lastUpdated': FieldValue.serverTimestamp(),
+        });
+      }
 
       _showSuccessDialog("${_firstName.text} ${_lastName.text}");
     } catch (e) {
