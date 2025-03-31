@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:otomoto/admin/pages/vehicle_forms/add_vehicle.dart';
-import 'package:otomoto/admin/pages/vehicle_forms/delete_vehicle.dart';
-import 'package:otomoto/admin/pages/vehicle_forms/maintenance_vehicle.dart';
-import 'package:otomoto/admin/pages/vehicle_forms/update_vehicle.dart';
-import 'package:otomoto/admin/pages/vehicle_forms/view_vehicle.dart';
+import 'package:otomoto/admin/pages/vehicle/vehicle_forms/add_vehicle.dart';
+import 'package:otomoto/admin/pages/vehicle/vehicle_forms/delete_vehicle.dart';
+import 'package:otomoto/admin/pages/vehicle/vehicle_forms/maintenance_vehicle.dart';
+import 'package:otomoto/admin/pages/vehicle/vehicle_forms/update_vehicle.dart';
+import 'package:otomoto/admin/pages/vehicle/vehicle_forms/view_vehicle.dart';
 
 class VehicleManagement extends StatefulWidget {
   const VehicleManagement({super.key});

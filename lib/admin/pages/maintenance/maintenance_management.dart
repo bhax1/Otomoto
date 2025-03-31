@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:otomoto/admin/pages/maintenance_forms/cancel_maintenance.dart';
+import 'package:otomoto/admin/pages/maintenance/maintenance_forms/cancel_maintenance.dart';
+import 'package:otomoto/admin/pages/maintenance/maintenance_forms/view_maintenance.dart';
 
 class VehicleMaintenance extends StatefulWidget {
   const VehicleMaintenance({super.key});
@@ -63,15 +64,50 @@ class _VehicleMaintenanceState extends State<VehicleMaintenance> {
   }
 
   void _filterMaintenance(String query) {
+    String formatDate(String dateString) {
+      DateTime dateTime = DateTime.parse(dateString);
+      return DateFormat("MMMM d, yyyy").format(dateTime);
+    }
+
+    setState(() {
+      filteredMaintenance = query.isEmpty
+          ? List.from(maintenanceList)
+          : maintenanceList.where((record) {
+              bool matchesType = record['maintenance_type']
+                  .toLowerCase()
+                  .contains(query.toLowerCase());
+
+              bool matchesStartDate = record['start_date'] != null &&
+                  formatDate(record['start_date']!)
+                      .toLowerCase()
+                      .contains(query.toLowerCase());
+
+              bool matchesEndDate = record['end_date'] != null &&
+                  formatDate(record['end_date']!)
+                      .toLowerCase()
+                      .contains(query.toLowerCase());
+
+              bool matchesStatus = record['status']
+                  .toLowerCase()
+                  .contains(query.toLowerCase());
+
+              return matchesType || matchesStartDate || matchesEndDate || matchesStatus;
+            }).toList();
+
+      _dataSource = MaintenanceDataSource(filteredMaintenance, _viewMaintenance,
+          _updateMaintenance, _cancelMaintenance, _doneMaintenance);
+    });
+  }
+
+  void _filterByMaintenanceId(String query) {
     setState(() {
       filteredMaintenance = query.isEmpty
           ? List.from(maintenanceList)
           : maintenanceList
-              .where((record) =>
-                  record['vehicle_id'].contains(query) ||
-                  record['maintenance_type']
-                      .toLowerCase()
-                      .contains(query.toLowerCase()))
+              .where((staff) => staff['id']!
+                  .toString()
+                  .toLowerCase()
+                  .contains(query.toLowerCase()))
               .toList();
 
       _dataSource = MaintenanceDataSource(filteredMaintenance, _viewMaintenance,
@@ -79,7 +115,30 @@ class _VehicleMaintenanceState extends State<VehicleMaintenance> {
     });
   }
 
-  void _viewMaintenance(int index) {}
+  void _filterByVehicleId(String query) {
+    setState(() {
+      filteredMaintenance = query.isEmpty
+          ? List.from(maintenanceList)
+          : maintenanceList
+              .where((staff) => staff['vehicle_id']!
+                  .toString()
+                  .toLowerCase()
+                  .contains(query.toLowerCase()))
+              .toList();
+      _dataSource = MaintenanceDataSource(filteredMaintenance, _viewMaintenance,
+          _updateMaintenance, _cancelMaintenance, _doneMaintenance);
+    });
+  }
+
+  void _viewMaintenance(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => ViewMaintenanceForm(
+        maintenanceId: filteredMaintenance[index]['id']!,
+        vehicleId: filteredMaintenance[index]['vehicle_id']!,
+      ),
+    );
+  }
 
   void _updateMaintenance(int index) {}
 
@@ -130,6 +189,32 @@ class _VehicleMaintenanceState extends State<VehicleMaintenance> {
                   OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onChanged: _filterMaintenance,
+          ),
+        ),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 200, // Fixed width for ID search
+          child: TextField(
+            decoration: InputDecoration(
+              labelText: 'Maintenance ID',
+              prefixIcon: const Icon(Icons.confirmation_number_sharp),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onChanged: _filterByMaintenanceId,
+          ),
+        ),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 150, // Fixed width for ID search
+          child: TextField(
+            decoration: InputDecoration(
+              labelText: 'Vehicle ID',
+              prefixIcon: const Icon(Icons.confirmation_number_sharp),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onChanged: _filterByVehicleId,
           ),
         ),
       ],

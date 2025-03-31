@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:otomoto/admin/pages/dashboard.dart';
-import 'package:otomoto/admin/pages/staff_management.dart';
+import 'package:otomoto/admin/pages/dashboard/dashboard.dart';
+import 'package:otomoto/admin/pages/staff/staff_management.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

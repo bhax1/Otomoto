@@ -114,7 +114,11 @@ class _AddVehicleFormState extends State<AddVehicleForm> {
         ),
       );
 
-  void _clearForm() => _controllers.forEach((controller) => controller.clear());
+  void _clearForm() {
+    for (var controller in _controllers) {
+      controller.clear();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

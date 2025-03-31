@@ -2,52 +2,52 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-class DeleteStaffDialog extends StatefulWidget {
-  final String staffId;
-  final String staffName;
+class DeleteVehicleDialog extends StatefulWidget {
+  final String vehicleId;
+  final String model, brand, plateNumber;
 
-  const DeleteStaffDialog({
+  const DeleteVehicleDialog({
     super.key,
-    required this.staffId,
-    required this.staffName,
+    required this.vehicleId,
+    required this.model,
+    required this.brand,
+    required this.plateNumber,
   });
 
   @override
-  _DeleteStaffDialogState createState() => _DeleteStaffDialogState();
+  _DeleteVehicleDialogState createState() => _DeleteVehicleDialogState();
 }
 
-class _DeleteStaffDialogState extends State<DeleteStaffDialog> {
+class _DeleteVehicleDialogState extends State<DeleteVehicleDialog> {
   bool _isLoading = false;
 
-  Future<void> _deleteStaff() async {
+  Future<void> _deleteVehicle() async {
     setState(() => _isLoading = true);
 
-    final staffId = int.tryParse(widget.staffId);
+    final vehicleId = int.tryParse(widget.vehicleId);
 
     try {
-      final staffCollection = FirebaseFirestore.instance.collection('staffs');
-      final querySnapshot =
-          await staffCollection.where('staff_id', isEqualTo: staffId).get();
+      final vehicleCollection =
+          FirebaseFirestore.instance.collection('vehicles');
+      final querySnapshot = await vehicleCollection
+          .where('vehicle_id', isEqualTo: vehicleId)
+          .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        await staffCollection.doc(querySnapshot.docs.first.id).delete();
+        await vehicleCollection.doc(querySnapshot.docs.first.id).delete();
 
         if (mounted) {
-          _showResultDialog(
-              "Success",
-              'Staff "${widget.staffName}" deleted successfully.',
-              Colors.green);
+          _showResultDialog("Success",
+              'Vehicle "${widget.model}" deleted successfully.', Colors.green);
         }
       } else {
         if (mounted) {
-          _showResultDialog("Error", "Staff not found.", Colors.orange);
+          _showResultDialog("Error", "Vehicle not found.", Colors.orange);
         }
       }
     } catch (e) {
       if (mounted) {
-        if (mounted) {
-          _showResultDialog("Error", "Failed to delete staff.", Colors.red);
-        }
+        _showResultDialog("Error", "Failed to delete vehicle.", Colors.red);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -97,7 +97,7 @@ class _DeleteStaffDialogState extends State<DeleteStaffDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Confirm Deletion',
+                    'Confirm Vehicle Removal',
                     style: TextStyle(
                       fontSize: 20, // Make it bigger
                       fontWeight: FontWeight.bold, // Make it bold
@@ -105,37 +105,31 @@ class _DeleteStaffDialogState extends State<DeleteStaffDialog> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                      'Are you sure you want to delete "${widget.staffName}"?'),
+                      'Are you sure you want to remove "${widget.brand} ${widget.model}" with Plate Number "${widget.plateNumber}"?'),
                 ],
               ),
             ),
       actions: _isLoading
           ? null
           : [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0, right: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text(
-                        "Cancel",
-                        style: TextStyle(color: Colors.blueGrey),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: _deleteStaff,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                      child: const Text(
-                        "Delete",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey,
+                ),
+                child: const Text(
+                  "Cancel",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: _deleteVehicle,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
+                child: const Text(
+                  "Remove",
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
             ],

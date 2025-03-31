@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:otomoto/admin/pages/staff_forms/add_staff.dart';
-import 'package:otomoto/admin/pages/staff_forms/delete_staff.dart';
-import 'package:otomoto/admin/pages/staff_forms/update_staff.dart';
-import 'package:otomoto/admin/pages/staff_forms/view_staff.dart';
+import 'package:otomoto/admin/pages/staff/staff_forms/add_staff.dart';
+import 'package:otomoto/admin/pages/staff/staff_forms/delete_staff.dart';
+import 'package:otomoto/admin/pages/staff/staff_forms/update_staff.dart';
+import 'package:otomoto/admin/pages/staff/staff_forms/view_staff.dart';
 
 class StaffManagement extends StatefulWidget {
   const StaffManagement({super.key});

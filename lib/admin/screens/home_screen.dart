@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:otomoto/admin/pages/dashboard.dart';
-import 'package:otomoto/admin/pages/staff_management.dart';
-import 'package:otomoto/admin/pages/vehicle_maintenance.dart';
-import 'package:otomoto/admin/pages/vehicle_management.dart';
+import 'package:otomoto/admin/pages/dashboard/dashboard.dart';
+import 'package:otomoto/admin/pages/staff/staff_management.dart';
+import 'package:otomoto/admin/pages/maintenance/maintenance_management.dart';
+import 'package:otomoto/admin/pages/vehicle/vehicle_management.dart';
+import 'package:otomoto/admin/screens/admin_login.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedPageIndex = 0;
-  bool _isLoading = true; // Track loading state
+  bool _isLoading = true;
 
   final List<String> pageTitles = [
     'Dashboard',
@@ -35,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onPageSelected(int index) {
     setState(() {
       _selectedPageIndex = index;
-      Navigator.pop(context); // Close the drawer
+      Navigator.pop(context);
     });
   }
 
@@ -45,127 +46,113 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadData();
   }
 
-  // Simulate loading for the entire content of the pages
   Future<void> _loadData() async {
     try {
-      // Assuming data loading functions for each page (you should replace these with real fetching logic)
-      Future<void> dashboardData = loadDashboardData();
-      Future<void> staffData = loadStaffData();
-      Future<void> vehicleData = loadVehicleData();
-
-      // Wait for all the data to be fetched
-      await Future.wait([dashboardData, staffData, vehicleData]);
-
+      await Future.wait([
+        loadDashboardData(),
+        loadStaffData(),
+        loadVehicleData(),
+      ]);
       setState(() {
-        _isLoading =
-            false; // Once everything is loaded, stop the loading indicator
+        _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _isLoading = false; // In case of an error, stop loading
+        _isLoading = false;
       });
-      print("Error loading data: $e");
     }
   }
 
-  // Simulate loading data functions for each page
-  Future<void> loadDashboardData() async {
-    // Replace this with your actual data fetching logic (e.g., from Firebase or an API)
-    await Future.delayed(Duration(seconds: 2)); // Simulate delay
-    print("Dashboard data loaded");
-  }
-
-  Future<void> loadStaffData() async {
-    await Future.delayed(Duration(seconds: 2)); // Simulate delay
-    print("Staff data loaded");
-  }
-
-  Future<void> loadVehicleData() async {
-    await Future.delayed(Duration(seconds: 2)); // Simulate delay
-    print("Vehicle data loaded");
-  }
+  Future<void> loadDashboardData() async => await Future.delayed(Duration(seconds: 2));
+  Future<void> loadStaffData() async => await Future.delayed(Duration(seconds: 2));
+  Future<void> loadVehicleData() async => await Future.delayed(Duration(seconds: 2));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: NavigationDrawer(onPageSelected: _onPageSelected),
+      drawer: _isLoading ? null : NavigationDrawer(onPageSelected: _onPageSelected),
       appBar: AppBar(
-        title: Text(pageTitles[_selectedPageIndex]),
+        title: Text(pageTitles[_selectedPageIndex], style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: _isLoading
-          ? Center(
-              child: SpinKitFadingCircle(
-                color: Theme.of(context).primaryColor,
-                size: 50.0,
-              ),
-            )
-          : IndexedStack(
-              index: _selectedPageIndex,
-              children: pageBodies,
+          ? Center(child: SpinKitFadingCircle(color: Theme.of(context).primaryColor, size: 50.0))
+          : AnimatedSwitcher(
+              duration: Duration(milliseconds: 500),
+              child: pageBodies[_selectedPageIndex],
             ),
     );
   }
 }
 
-class NavigationDrawer extends StatefulWidget {
+class NavigationDrawer extends StatelessWidget {
   final Function(int) onPageSelected;
   const NavigationDrawer({super.key, required this.onPageSelected});
 
   @override
-  _NavigationDrawerState createState() => _NavigationDrawerState();
-}
-
-class _NavigationDrawerState extends State<NavigationDrawer> {
-  @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
+      child: Column(
         children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor, // Uses the theme color
+          // User Header with Avatar
+          UserAccountsDrawerHeader(
+            accountName: Text("Admin User", style: TextStyle(fontWeight: FontWeight.bold)),
+            accountEmail: Text("admin@example.com"),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: AssetImage('assets/avatar/admin_avatar.png'),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+          ),
+
+          // Navigation Items
+          Expanded(
+            child: ListView(
               children: [
-                Text(
-                  'Admin',
-                  style: Theme.of(context).textTheme.titleLarge,
+                _buildDrawerItem(Icons.dashboard, 'Dashboard', 0),
+                _buildDrawerItem(Icons.people, 'Staff Management', 1),
+                ExpansionTile(
+                  leading: Icon(Icons.directions_car),
+                  title: Text('Vehicle Management'),
+                  children: [
+                    _buildDrawerItem(Icons.list, 'Vehicle List', 2),
+                    _buildDrawerItem(Icons.build, 'Maintenance', 3),
+                  ],
                 ),
               ],
             ),
           ),
+
+          // Spacer pushes items to bottom
+          Divider(),
+
+          // Profile & Logout placed at the bottom
+          _buildDrawerItem(Icons.settings, 'Profile Settings', 4),
           ListTile(
-            title: Text('Dashboard'),
-            onTap: () => widget.onPageSelected(0),
+            leading: Icon(Icons.logout, color: Colors.red),
+            title: Text('Logout', style: TextStyle(color: Colors.red)),
+            onTap: () => _logout(context),
           ),
-          ListTile(
-            title: Text('Staff Management'),
-            onTap: () => widget.onPageSelected(1),
-          ),
-          ExpansionTile(
-            title: Text('Vehicle Management'),
-            children: [
-              ListTile(
-                title: Text('Vehicle List'),
-                onTap: () => widget.onPageSelected(2),
-              ),
-              ListTile(
-                title: Text('Maintenance'),
-                onTap: () => widget.onPageSelected(3),
-              ),
-            ],
-          ),
-          ListTile(
-            title: Text('Profile Settings'),
-            onTap: () => widget.onPageSelected(4),
-          ),
-          ListTile(
-            title: Text('Logout Account', style: TextStyle(color: Colors.red)),
-            onTap: () {},
-          ),
+          SizedBox(height: 20), // Space from bottom
         ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, int index) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      onTap: () => onPageSelected(index),
+    );
+  }
+
+  void _logout(BuildContext context) {
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        transitionDuration: Duration(milliseconds: 500),
+        pageBuilder: (context, animation, secondaryAnimation) => AdminLogin(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
       ),
     );
   }

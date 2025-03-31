@@ -99,13 +99,13 @@ class _AdminLoginState extends State<AdminLogin> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      body: RawKeyboardListener(
+      body: KeyboardListener(
         focusNode: _focusNode,
-        onKey: (RawKeyEvent event) {
-          if (event is RawKeyDownEvent &&
+        onKeyEvent: (KeyEvent event) {
+          if (event is KeyDownEvent &&
               (event.logicalKey == LogicalKeyboardKey.enter ||
                   event.logicalKey == LogicalKeyboardKey.numpadEnter)) {
-            _login(); // Trigger login on Enter press
+            _login();
           }
         },
         child: AnimatedSwitcher(
@@ -113,7 +113,7 @@ class _AdminLoginState extends State<AdminLogin> {
           child: _isLoading
               ? Container(
                   key: const ValueKey(
-                      1), // Ensure the loading screen gets a different key
+                      1),
                   color: Colors.amber,
                   child: const Center(
                     child: SpinKitFadingCircle(color: Colors.white, size: 50.0),
@@ -123,7 +123,7 @@ class _AdminLoginState extends State<AdminLogin> {
                   children: [
                     Row(
                       key: const ValueKey(
-                          2), // Ensure the main content gets a different key
+                          2),
                       children: [
                         Expanded(
                           child: Padding(
