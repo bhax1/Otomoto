@@ -131,76 +131,80 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: _isLoading
-          ? const SingleChildScrollView(
-              child: SizedBox(
-                child: Center(
-                  child: SpinKitThreeBounce(
-                    color: Colors.blueGrey,
-                    size: 30.0,
+    return PopScope(
+      canPop: !_isLoading,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: _isLoading
+            ? const SingleChildScrollView(
+                child: SizedBox(
+                  child: Center(
+                    child: SpinKitThreeBounce(
+                      color: Colors.blueGrey,
+                      size: 30.0,
+                    ),
                   ),
                 ),
+              )
+            : Form(
+                key: _formKey,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    const Text("Maintenance Schedule",
+                        style: TextStyle(
+                            fontSize: 22, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 5),
+                    const Text(
+                      "Form for scheduling maintenance of a vehicle.",
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildReadOnlyField(
+                              "Vehicle ID", widget.vehicleId),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildReadOnlyField(
+                              "Plate Number", widget.plateNumber),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildReadOnlyField("Brand", widget.brand),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildReadOnlyField("Model", widget.model),
+                        ),
+                      ],
+                    ),
+                    _buildDatePicker("Start Date", _start, true),
+                    _buildDatePicker("End Date", _end, false),
+                    const SizedBox(height: 12),
+                    _buildMaintenanceSelection(),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                            onPressed: _submitForm,
+                            child: const Text("Submit")),
+                        const SizedBox(width: 10),
+                        TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Cancel")),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            )
-          : Form(
-              key: _formKey,
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  const Text("Maintenance Schedule",
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
-                  const Text(
-                    "Form for scheduling maintenance of a vehicle.",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 5),
-                  Row(
-                    children: [
-                      Expanded(
-                        child:
-                            _buildReadOnlyField("Vehicle ID", widget.vehicleId),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildReadOnlyField(
-                            "Plate Number", widget.plateNumber),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildReadOnlyField("Brand", widget.brand),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildReadOnlyField("Model", widget.model),
-                      ),
-                    ],
-                  ),
-                  _buildDatePicker("Start Date", _start, true),
-                  _buildDatePicker("End Date", _end, false),
-                  const SizedBox(height: 12),
-                  _buildMaintenanceSelection(),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ElevatedButton(
-                          onPressed: _submitForm, child: const Text("Submit")),
-                      const SizedBox(width: 10),
-                      TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("Cancel")),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+      ),
     );
   }
 
@@ -210,8 +214,8 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
       child: TextFormField(
         initialValue: value,
         readOnly: true,
-        decoration:
-            InputDecoration(labelText: label, border: const OutlineInputBorder()),
+        decoration: InputDecoration(
+            labelText: label, border: const OutlineInputBorder()),
       ),
     );
   }

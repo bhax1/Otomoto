@@ -164,7 +164,6 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
           'lastUpdated': FieldValue.serverTimestamp(),
         });
       }
-
       _showSuccessDialog("${_firstName.text} ${_lastName.text}");
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -241,113 +240,117 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: _isLoading
-          ? const SingleChildScrollView(
-              child: SizedBox(
-                child: Center(
-                  child: SpinKitThreeBounce(
-                    color: Colors.blueGrey,
-                    size: 30.0,
+    return PopScope(
+      canPop: !_isLoading,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: _isLoading
+            ? const SingleChildScrollView(
+                child: SizedBox(
+                  child: Center(
+                    child: SpinKitThreeBounce(
+                      color: Colors.blueGrey,
+                      size: 30.0,
+                    ),
                   ),
                 ),
-              ),
-            )
-          : AnimatedOpacity(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-              opacity: _opacity,
-              child: Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Update Staff",
-                          style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 5),
-                      const Text(
-                        "Form for updating details of a staff member.",
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "Staff ID: ${widget.staffId}",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.green,
+              )
+            : AnimatedOpacity(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+                opacity: _opacity,
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Update Staff",
+                            style: TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 5),
+                        const Text(
+                          "Form for updating details of a staff member.",
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
                         ),
-                      ),
-                      const SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Expanded(
-                              child: _buildTextField("First Name", _firstName)),
-                          const SizedBox(width: 8),
-                          Expanded(
-                              child: _buildTextField("Last Name", _lastName)),
-                        ],
-                      ),
-                      _buildTextField("Address", _address),
-                      _buildTextField("Contact Number", _contact,
-                          keyboard: TextInputType.phone),
-                      _buildTextField("Email", _email),
-                      _buildTextField("Job Position", _jobPosition),
-                      _buildTextField("Emergency Contact", _emergencyContact,
-                          keyboard: TextInputType.phone),
-                      const Text(
-                        "Birthdate",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      _buildDatePickerField("Birthdate", _birthdate,
-                          (date) => setState(() => _birthdate = date)),
-                      const Text(
-                        "Hire Date",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      _buildDatePickerField("Hire Date", _hireDate,
-                          (date) => setState(() => _hireDate = date)),
-                      _buildGenderDropdown(),
-                      SwitchListTile(
-                        title: const Text("Active Status"),
-                        value: _status ?? true,
-                        onChanged: (value) {
-                          setState(() {
-                            _status = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                            onPressed: _hasChanges() ? _updateStaff : null,
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    _hasChanges() ? Colors.blue : Colors.grey,
-                                minimumSize: const Size(90, 40)),
-                            child: const Text("Update",
-                                style: TextStyle(color: Colors.white)),
+                        const SizedBox(height: 10),
+                        Text(
+                          "Staff ID: ${widget.staffId}",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green,
                           ),
-                          const SizedBox(width: 10),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Cancel",
-                                style: TextStyle(color: Colors.grey)),
-                          ),
-                        ],
-                      )
-                    ],
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            Expanded(
+                                child:
+                                    _buildTextField("First Name", _firstName)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                                child: _buildTextField("Last Name", _lastName)),
+                          ],
+                        ),
+                        _buildTextField("Address", _address),
+                        _buildTextField("Contact Number", _contact,
+                            keyboard: TextInputType.phone),
+                        _buildTextField("Email", _email),
+                        _buildTextField("Job Position", _jobPosition),
+                        _buildTextField("Emergency Contact", _emergencyContact,
+                            keyboard: TextInputType.phone),
+                        const Text(
+                          "Birthdate",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        _buildDatePickerField("Birthdate", _birthdate,
+                            (date) => setState(() => _birthdate = date)),
+                        const Text(
+                          "Hire Date",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        _buildDatePickerField("Hire Date", _hireDate,
+                            (date) => setState(() => _hireDate = date)),
+                        _buildGenderDropdown(),
+                        SwitchListTile(
+                          title: const Text("Active Status"),
+                          value: _status ?? true,
+                          onChanged: (value) {
+                            setState(() {
+                              _status = value;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            ElevatedButton(
+                              onPressed: _hasChanges() ? _updateStaff : null,
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      _hasChanges() ? Colors.blue : Colors.grey,
+                                  minimumSize: const Size(90, 40)),
+                              child: const Text("Update",
+                                  style: TextStyle(color: Colors.white)),
+                            ),
+                            const SizedBox(width: 10),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("Cancel",
+                                  style: TextStyle(color: Colors.grey)),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
+      ),
     );
   }
 
@@ -359,8 +362,8 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
         controller: controller,
         keyboardType: keyboard,
         readOnly: readOnly,
-        decoration:
-            InputDecoration(labelText: label, border: const OutlineInputBorder()),
+        decoration: InputDecoration(
+            labelText: label, border: const OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
       ),

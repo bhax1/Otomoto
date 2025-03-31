@@ -69,8 +69,8 @@ class _DeleteStaffDialogState extends State<DeleteStaffDialog> {
         actions: [
           TextButton(
             onPressed: () => {
-              Navigator.of(context).pop(),
-              Navigator.of(context).pop(),
+              Navigator.pop(context),
+              Navigator.pop(context),
             },
             child: const Text("OK"),
           ),
@@ -81,64 +81,67 @@ class _DeleteStaffDialogState extends State<DeleteStaffDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      scrollable: true,
-      content: _isLoading
-          ? const Center(
-              child: SpinKitThreeBounce(
-                color: Colors.blueGrey,
-                size: 30.0,
-              ),
-            )
-          : Padding(
-              padding: const EdgeInsets.all(6),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Confirm Staff Removal',
-                    style: TextStyle(
-                      fontSize: 20, // Make it bigger
-                      fontWeight: FontWeight.bold, // Make it bold
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                      'Are you sure you want to delete "${widget.staffName}"?'),
-                ],
-              ),
-            ),
-      actions: _isLoading
-          ? null
-          : [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0, right: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+    return PopScope(
+      canPop: !_isLoading,
+      child: AlertDialog(
+        scrollable: true,
+        content: _isLoading
+            ? const Center(
+                child: SpinKitThreeBounce(
+                  color: Colors.blueGrey,
+                  size: 30.0,
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.all(6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text(
-                        "Cancel",
-                        style: TextStyle(color: Colors.blueGrey),
+                    const Text(
+                      'Confirm Staff Removal',
+                      style: TextStyle(
+                        fontSize: 20, // Make it bigger
+                        fontWeight: FontWeight.bold, // Make it bold
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: _deleteStaff,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                      child: const Text(
-                        "Delete",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                        'Are you sure you want to delete "${widget.staffName}"?'),
                   ],
                 ),
               ),
-            ],
+        actions: _isLoading
+            ? null
+            : [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0, right: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Colors.blueGrey),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: _deleteStaff,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text(
+                          "Delete",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+      ),
     );
   }
 }

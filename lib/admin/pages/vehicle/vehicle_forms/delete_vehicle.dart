@@ -81,58 +81,61 @@ class _DeleteVehicleDialogState extends State<DeleteVehicleDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      scrollable: true,
-      content: _isLoading
-          ? const Center(
-              child: SpinKitThreeBounce(
-                color: Colors.blueGrey,
-                size: 30.0,
-              ),
-            )
-          : Padding(
-              padding: const EdgeInsets.all(6),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Confirm Vehicle Removal',
-                    style: TextStyle(
-                      fontSize: 20, // Make it bigger
-                      fontWeight: FontWeight.bold, // Make it bold
+    return PopScope(
+      canPop: !_isLoading,
+      child: AlertDialog(
+        scrollable: true,
+        content: _isLoading
+            ? const Center(
+                child: SpinKitThreeBounce(
+                  color: Colors.blueGrey,
+                  size: 30.0,
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.all(6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Confirm Vehicle Removal',
+                      style: TextStyle(
+                        fontSize: 20, // Make it bigger
+                        fontWeight: FontWeight.bold, // Make it bold
+                      ),
                     ),
+                    const SizedBox(height: 20),
+                    Text(
+                        'Are you sure you want to remove "${widget.brand} ${widget.model}" with Plate Number "${widget.plateNumber}"?'),
+                  ],
+                ),
+              ),
+        actions: _isLoading
+            ? null
+            : [
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey,
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                      'Are you sure you want to remove "${widget.brand} ${widget.model}" with Plate Number "${widget.plateNumber}"?'),
-                ],
-              ),
-            ),
-      actions: _isLoading
-          ? null
-          : [
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey,
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-                child: const Text(
-                  "Cancel",
-                  style: TextStyle(color: Colors.white),
+                ElevatedButton(
+                  onPressed: _deleteVehicle,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                  child: const Text(
+                    "Remove",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-              ),
-              ElevatedButton(
-                onPressed: _deleteVehicle,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                ),
-                child: const Text(
-                  "Remove",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
+              ],
+      ),
     );
   }
 }

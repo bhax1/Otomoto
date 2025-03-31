@@ -135,42 +135,46 @@ class _CancelMaintenanceFormState extends State<CancelMaintenanceForm> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      contentPadding: const EdgeInsets.all(24),
-      scrollable: true,
-      content: isLoading
-          ? const Center(
-              child: SpinKitThreeBounce(color: Colors.blueGrey, size: 30.0))
-          : AnimatedOpacity(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-              opacity: opacity,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Cancel Maintenance",
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineSmall
-                          ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueGrey[900])),
-                  const SizedBox(height: 12),
-                  Text(
-                      "Are you sure you want to cancel this maintenance request?",
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(color: Colors.grey[700])),
-                  const SizedBox(height: 20),
-                  _buildInfoSection(),
-                  const SizedBox(height: 24),
-                  _buildActionButtons(),
-                ],
+    return PopScope(
+      canPop: !isLoading,
+      child: AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+        contentPadding: const EdgeInsets.all(24),
+        scrollable: true,
+        content: isLoading
+            ? const Center(
+                child: SpinKitThreeBounce(color: Colors.blueGrey, size: 30.0))
+            : AnimatedOpacity(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+                opacity: opacity,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Cancel Maintenance",
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blueGrey[900])),
+                    const SizedBox(height: 12),
+                    Text(
+                        "Are you sure you want to cancel this maintenance request?",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.copyWith(color: Colors.grey[700])),
+                    const SizedBox(height: 20),
+                    _buildInfoSection(),
+                    const SizedBox(height: 24),
+                    _buildActionButtons(),
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 
