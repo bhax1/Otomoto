@@ -62,18 +62,18 @@ class MyApp extends StatelessWidget {
           fillColor: Colors.white, // Light amber fill for text fields
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.amber),
+            borderSide: const BorderSide(color: Colors.amber),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.black),
+            borderSide: const BorderSide(color: Colors.black),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide(color: Colors.amber[700]!, width: 2),
           ),
-          hintStyle: TextStyle(color: Colors.black),
-          labelStyle: TextStyle(color: Colors.black),
+          hintStyle: const TextStyle(color: Colors.black),
+          labelStyle: const TextStyle(color: Colors.black),
         ),
       ),
       home: const LoginScreen(),

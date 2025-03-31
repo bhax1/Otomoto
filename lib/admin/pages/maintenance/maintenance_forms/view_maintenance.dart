@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 
 class ViewMaintenanceForm extends StatefulWidget {
@@ -92,56 +93,63 @@ class _ViewMaintenanceFormState extends State<ViewMaintenanceForm> {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
-      content: AnimatedOpacity(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-        opacity: opacity,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Vehicle Details",
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            _buildInfoRow(
-                Icons.car_rental, "Brand: ${vehicleData?['brand'] ?? 'N/A'}"),
-            _buildInfoRow(Icons.directions_car,
-                "Model: ${vehicleData?['model'] ?? 'N/A'}"),
-            _buildInfoRow(
-                Icons.palette, "Color: ${vehicleData?['color'] ?? 'N/A'}"),
-            _buildInfoRow(Icons.confirmation_number,
-                "Plate Number: ${vehicleData?['plate_number'] ?? 'N/A'}"),
-            const Divider(),
-            _buildInfoRow(
-                Icons.settings, "Maintenance Type: ${_getMaintenanceTypes()}"),
-            _buildInfoRow(Icons.date_range,
-                "Start Date: ${_formatDate(maintenanceData?['start_date'])}"),
-            _buildInfoRow(Icons.event,
-                "End Date: ${_formatDate(maintenanceData?['end_date'])}"),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+      content: isLoading
+          ? const Center(
+              child: SpinKitThreeBounce(
+                color: Colors.blueGrey,
+                size: 30.0,
+              ),
+            )
+          : AnimatedOpacity(
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+              opacity: opacity,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Vehicle Details",
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                ),
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  "Close",
-                  style: TextStyle(color: Colors.white),
-                ),
+                  const SizedBox(height: 16),
+                  _buildInfoRow(Icons.car_rental,
+                      "Brand: ${vehicleData?['brand'] ?? 'N/A'}"),
+                  _buildInfoRow(Icons.directions_car,
+                      "Model: ${vehicleData?['model'] ?? 'N/A'}"),
+                  _buildInfoRow(Icons.palette,
+                      "Color: ${vehicleData?['color'] ?? 'N/A'}"),
+                  _buildInfoRow(Icons.confirmation_number,
+                      "Plate Number: ${vehicleData?['plate_number'] ?? 'N/A'}"),
+                  const Divider(),
+                  _buildInfoRow(Icons.settings,
+                      "Maintenance Type: ${_getMaintenanceTypes()}"),
+                  _buildInfoRow(Icons.date_range,
+                      "Start Date: ${_formatDate(maintenanceData?['start_date'])}"),
+                  _buildInfoRow(Icons.event,
+                      "End Date: ${_formatDate(maintenanceData?['end_date'])}"),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        "Close",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 

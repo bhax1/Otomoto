@@ -21,11 +21,11 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   final List<Widget> pageBodies = [
-    DashboardBody(),
-    StaffManagement(),
-    Center(child: Text('Vehicle List Page')),
-    Center(child: Text('Maintenance')),
-    Center(child: Text('Profile Settings Page')),
+    const DashboardBody(),
+    const StaffManagement(),
+    const Center(child: Text('Vehicle List Page')),
+    const Center(child: Text('Maintenance')),
+    const Center(child: Text('Profile Settings Page')),
   ];
 
   void _onPageSelected(int index) {
@@ -81,32 +81,32 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
             ),
           ),
           ListTile(
-            title: Text('Dashboard'),
+            title: const Text('Dashboard'),
             onTap: () => widget.onPageSelected(0),
           ),
           ListTile(
-            title: Text('Staff Management'),
+            title: const Text('Staff Management'),
             onTap: () => widget.onPageSelected(1),
           ),
           ExpansionTile(
-            title: Text('Vehicle Management'),
+            title: const Text('Vehicle Management'),
             children: [
               ListTile(
-                title: Text('Vehicle List'),
+                title: const Text('Vehicle List'),
                 onTap: () => widget.onPageSelected(2),
               ),
               ListTile(
-                title: Text('Maintenance'),
+                title: const Text('Maintenance'),
                 onTap: () => widget.onPageSelected(3),
               ),
             ],
           ),
           ListTile(
-            title: Text('Profile Settings'),
+            title: const Text('Profile Settings'),
             onTap: () => widget.onPageSelected(4),
           ),
           ListTile(
-            title: Text('Logout Account', style: TextStyle(color: Colors.red)),
+            title: const Text('Logout Account', style: TextStyle(color: Colors.red)),
             onTap: () {},
           ),
         ],

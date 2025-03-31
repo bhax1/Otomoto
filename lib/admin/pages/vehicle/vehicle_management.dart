@@ -110,7 +110,7 @@ class _VehicleManagementState extends State<VehicleManagement> {
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: SizedBox(
+        child: const SizedBox(
           width: 500,
           child: AddVehicleForm(),
         ),

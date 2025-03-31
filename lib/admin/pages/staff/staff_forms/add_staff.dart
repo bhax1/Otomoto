@@ -157,6 +157,7 @@ class _AddStaffFormState extends State<AddStaffForm> {
     _address.clear();
     _contact.clear();
     _email.clear();
+    _emergencyContact.clear();
   }
 
   @override
@@ -164,9 +165,9 @@ class _AddStaffFormState extends State<AddStaffForm> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: _isLoading
-          ? SingleChildScrollView(
+          ? const SingleChildScrollView(
               child: SizedBox(
-                child: const Center(
+                child: Center(
                   child: SpinKitThreeBounce(
                     color: Colors.blueGrey,
                     size: 30.0,
@@ -256,7 +257,7 @@ class _AddStaffFormState extends State<AddStaffForm> {
         controller: controller,
         keyboardType: keyboard,
         decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
+            InputDecoration(labelText: label, border: const OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
       ),

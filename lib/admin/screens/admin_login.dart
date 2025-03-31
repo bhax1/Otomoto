@@ -52,7 +52,7 @@ class _AdminLoginState extends State<AdminLogin> {
               PageRouteBuilder(
                 transitionDuration: const Duration(milliseconds: 500),
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    HomeScreen(),
+                    const HomeScreen(),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
                   return FadeTransition(
@@ -80,11 +80,11 @@ class _AdminLoginState extends State<AdminLogin> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Error"),
+          title: const Text("Error"),
           content: Text(message),
           actions: <Widget>[
             TextButton(
-              child: Text("OK"),
+              child: const Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
@@ -287,7 +287,7 @@ class _ForgotPass extends StatelessWidget {
             Navigator.of(context).pushReplacement(
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    LoginScreen(),
+                    const LoginScreen(),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
                   return FadeTransition(

@@ -107,7 +107,7 @@ class _StaffManagementState extends State<StaffManagement> {
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: SizedBox(width: 500, child: AddStaffForm()),
+        child: const SizedBox(width: 500, child: AddStaffForm()),
       ),
     );
   }

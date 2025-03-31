@@ -26,11 +26,11 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   final List<Widget> pageBodies = [
-    DashboardBody(),
-    StaffManagement(),
-    VehicleManagement(),
-    VehicleMaintenance(),
-    Center(child: Text('Profile Settings Page')),
+    const DashboardBody(),
+    const StaffManagement(),
+    const VehicleManagement(),
+    const VehicleMaintenance(),
+    const Center(child: Text('Profile Settings Page')),
   ];
 
   void _onPageSelected(int index) {
@@ -63,21 +63,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> loadDashboardData() async => await Future.delayed(Duration(seconds: 2));
-  Future<void> loadStaffData() async => await Future.delayed(Duration(seconds: 2));
-  Future<void> loadVehicleData() async => await Future.delayed(Duration(seconds: 2));
+  Future<void> loadDashboardData() async => await Future.delayed(const Duration(seconds: 2));
+  Future<void> loadStaffData() async => await Future.delayed(const Duration(seconds: 2));
+  Future<void> loadVehicleData() async => await Future.delayed(const Duration(seconds: 2));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: _isLoading ? null : NavigationDrawer(onPageSelected: _onPageSelected),
       appBar: AppBar(
-        title: Text(pageTitles[_selectedPageIndex], style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(pageTitles[_selectedPageIndex], style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: _isLoading
           ? Center(child: SpinKitFadingCircle(color: Theme.of(context).primaryColor, size: 50.0))
           : AnimatedSwitcher(
-              duration: Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 500),
               child: pageBodies[_selectedPageIndex],
             ),
     );
@@ -95,9 +95,9 @@ class NavigationDrawer extends StatelessWidget {
         children: [
           // User Header with Avatar
           UserAccountsDrawerHeader(
-            accountName: Text("Admin User", style: TextStyle(fontWeight: FontWeight.bold)),
-            accountEmail: Text("admin@example.com"),
-            currentAccountPicture: CircleAvatar(
+            accountName: const Text("Admin User", style: TextStyle(fontWeight: FontWeight.bold)),
+            accountEmail: const Text("admin@example.com"),
+            currentAccountPicture: const CircleAvatar(
               backgroundImage: AssetImage('assets/avatar/admin_avatar.png'),
             ),
             decoration: BoxDecoration(color: Theme.of(context).primaryColor),
@@ -110,8 +110,8 @@ class NavigationDrawer extends StatelessWidget {
                 _buildDrawerItem(Icons.dashboard, 'Dashboard', 0),
                 _buildDrawerItem(Icons.people, 'Staff Management', 1),
                 ExpansionTile(
-                  leading: Icon(Icons.directions_car),
-                  title: Text('Vehicle Management'),
+                  leading: const Icon(Icons.directions_car),
+                  title: const Text('Vehicle Management'),
                   children: [
                     _buildDrawerItem(Icons.list, 'Vehicle List', 2),
                     _buildDrawerItem(Icons.build, 'Maintenance', 3),
@@ -122,16 +122,16 @@ class NavigationDrawer extends StatelessWidget {
           ),
 
           // Spacer pushes items to bottom
-          Divider(),
+          const Divider(),
 
           // Profile & Logout placed at the bottom
           _buildDrawerItem(Icons.settings, 'Profile Settings', 4),
           ListTile(
-            leading: Icon(Icons.logout, color: Colors.red),
-            title: Text('Logout', style: TextStyle(color: Colors.red)),
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Logout', style: TextStyle(color: Colors.red)),
             onTap: () => _logout(context),
           ),
-          SizedBox(height: 20), // Space from bottom
+          const SizedBox(height: 20), // Space from bottom
         ],
       ),
     );
@@ -148,8 +148,8 @@ class NavigationDrawer extends StatelessWidget {
   void _logout(BuildContext context) {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        transitionDuration: Duration(milliseconds: 500),
-        pageBuilder: (context, animation, secondaryAnimation) => AdminLogin(),
+        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (context, animation, secondaryAnimation) => const AdminLogin(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },

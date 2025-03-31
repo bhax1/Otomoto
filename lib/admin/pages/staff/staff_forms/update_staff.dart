@@ -244,9 +244,9 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: _isLoading
-          ? SingleChildScrollView(
+          ? const SingleChildScrollView(
               child: SizedBox(
-                child: const Center(
+                child: Center(
                   child: SpinKitThreeBounce(
                     color: Colors.blueGrey,
                     size: 30.0,
@@ -275,7 +275,7 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
                       const SizedBox(height: 10),
                       Text(
                         "Staff ID: ${widget.staffId}",
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.green,
@@ -360,7 +360,7 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
         keyboardType: keyboard,
         readOnly: readOnly,
         decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
+            InputDecoration(labelText: label, border: const OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
       ),

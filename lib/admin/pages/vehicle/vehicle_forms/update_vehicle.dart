@@ -290,7 +290,7 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
         controller: controller,
         keyboardType: keyboard,
         decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
+            InputDecoration(labelText: label, border: const OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
       ),
@@ -308,7 +308,7 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
           });
         },
         decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
+            InputDecoration(labelText: label, border: const OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
         items: items

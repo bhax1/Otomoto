@@ -211,7 +211,7 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
         initialValue: value,
         readOnly: true,
         decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
+            InputDecoration(labelText: label, border: const OutlineInputBorder()),
       ),
     );
   }
@@ -269,11 +269,11 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
             }
           },
           child: InputDecorator(
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               border: OutlineInputBorder(),
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              suffixIcon: const Icon(Icons.arrow_drop_down),
+                  EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              suffixIcon: Icon(Icons.arrow_drop_down),
             ),
             child: Text(
               _selectedMaintenance.isEmpty

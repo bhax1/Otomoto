@@ -189,7 +189,7 @@ class _AddVehicleFormState extends State<AddVehicleForm> {
         controller: controller,
         keyboardType: keyboard,
         decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
+            InputDecoration(labelText: label, border: const OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
       ),

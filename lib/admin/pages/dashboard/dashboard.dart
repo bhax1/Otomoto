@@ -14,14 +14,14 @@ class _DashboardBodyState extends State<DashboardBody> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Earning Summary',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
@@ -41,8 +41,8 @@ class _DashboardBodyState extends State<DashboardBody> {
               ),
             ],
           ),
-          SizedBox(height: 20),
-          Row(
+          const SizedBox(height: 20),
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               InfoCard(title: 'Revenue', value: '\$0.00', icon: Icons.money),
@@ -52,25 +52,25 @@ class _DashboardBodyState extends State<DashboardBody> {
                   title: 'Feedback Rating', value: '5.0', icon: Icons.star),
             ],
           ),
-          SizedBox(height: 20),
-          Text(
+          const SizedBox(height: 20),
+          const Text(
             'Recent Sales',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           Expanded(
             child: ListView(
               children: [
-                SaleItem(
+                const SaleItem(
                     order: '#00003',
                     date: 'October 1, 2024',
                     status: 'Completed',
                     amount: '\$0.00'),
-                SaleItem(
+                const SaleItem(
                     order: '#00002',
                     date: 'October 1, 2024',
                     status: 'Completed',
                     amount: '\$0.00'),
-                SaleItem(
+                const SaleItem(
                     order: '#00001',
                     date: 'October 1, 2024',
                     status: 'Completed',
@@ -100,15 +100,15 @@ class InfoCard extends StatelessWidget {
     return Card(
       elevation: 4,
       child: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Icon(icon, size: 30),
-            SizedBox(height: 10),
-            Text(title, style: TextStyle(fontSize: 16)),
-            SizedBox(height: 5),
+            const SizedBox(height: 10),
+            Text(title, style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 5),
             Text(value,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -138,8 +138,8 @@ class SaleItem extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(status, style: TextStyle(color: Colors.green)),
-            SizedBox(width: 10),
+            Text(status, style: const TextStyle(color: Colors.green)),
+            const SizedBox(width: 10),
             Text(amount),
           ],
         ),
