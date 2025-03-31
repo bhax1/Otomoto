@@ -81,7 +81,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
             ),
           ),
           ListTile(
-            title: const Text('Dashboards' ,style: TextStyle(fontSize: 50, fontWeight: FontWeight.w500),),
+            title: const Text('Dashboard'),
             onTap: () => widget.onPageSelected(0),
           ),
           ListTile(

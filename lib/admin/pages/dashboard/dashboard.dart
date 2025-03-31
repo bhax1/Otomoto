@@ -18,52 +18,55 @@ class _DashboardBodyState extends State<DashboardBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-         Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    const Expanded(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-            
-          Text(
-            '         Earning Summary',
-            style: TextStyle(fontSize: 35, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    ),
-          
-
-            Container(
-  decoration: BoxDecoration(
-    color: Colors.white, // White background
-    borderRadius: BorderRadius.circular(8),
-    border: Border.all(color: Colors.white), // Optional: Border styling
-  ),
-  padding: const EdgeInsets.symmetric(horizontal: 12),
-  child: DropdownButton<String>(
-    value: selectedPeriod,
-    dropdownColor: Colors.white, // Ensure dropdown items have a white background
-    style: const TextStyle(color: Colors.black), // Set text color
-    underline: const SizedBox(), // Removes the underline
-    icon: const Icon(Icons.arrow_drop_down, color: Colors.black), // Arrow color
-    items: periods.map((String value) {
-      return DropdownMenuItem<String>(
-        value: value,
-        child: Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 20), // Apply to all items
-        ),
-      );
-    }).toList(),
-    onChanged: (newValue) {
-      setState(() {
-        selectedPeriod = newValue!;
-      });
-    },
-  ),
-),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '         Earning Summary',
+                      style:
+                          TextStyle(fontSize: 35, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white, // White background
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                      color: Colors.white), // Optional: Border styling
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: DropdownButton<String>(
+                  value: selectedPeriod,
+                  dropdownColor: Colors
+                      .white, // Ensure dropdown items have a white background
+                  style: const TextStyle(color: Colors.black), // Set text color
+                  underline: const SizedBox(), // Removes the underline
+                  icon: const Icon(Icons.arrow_drop_down,
+                      color: Colors.black), // Arrow color
+                  items: periods.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(
+                        value,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 20), // Apply to all items
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    setState(() {
+                      selectedPeriod = newValue!;
+                    });
+                  },
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 40),
@@ -82,7 +85,9 @@ class _DashboardBodyState extends State<DashboardBody> {
             'Recent Sales',
             style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 10,),
+          const SizedBox(
+            height: 10,
+          ),
           Expanded(
             child: ListView(
               children: [
@@ -123,22 +128,21 @@ class InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     Color iconColor;
-switch (title) {
-  case 'Revenue':
-    iconColor = Colors.green; // Green for Revenue
-    break;
-  case 'Total Rents':
-    iconColor = Colors.blue; // Blue for Total Rents
-    break;
-  case 'Feedback Rating':
-    iconColor = Colors.yellow; // Yellow for Feedback
-    break;
-  default:
-    iconColor = Colors.grey; // Fallback color
-}
-     return Card(
+    switch (title) {
+      case 'Revenue':
+        iconColor = Colors.green; // Green for Revenue
+        break;
+      case 'Total Rents':
+        iconColor = Colors.blue; // Blue for Total Rents
+        break;
+      case 'Feedback Rating':
+        iconColor = Colors.yellow; // Yellow for Feedback
+        break;
+      default:
+        iconColor = Colors.grey; // Fallback color
+    }
+    return Card(
       color: Colors.white,
       elevation: 4,
       child: Padding(
@@ -181,7 +185,6 @@ class SaleItem extends StatelessWidget {
   final String date;
   final String status;
   final String amount;
-  
 
   const SaleItem(
       {super.key,
@@ -192,7 +195,6 @@ class SaleItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return Card(
       color: Colors.white,
       elevation: 3,
@@ -211,7 +213,7 @@ class SaleItem extends StatelessWidget {
                 Text(
                   order,
                   style: const TextStyle(
-                    fontSize: 25,  // Bigger font for order number
+                    fontSize: 25, // Bigger font for order number
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
@@ -221,7 +223,7 @@ class SaleItem extends StatelessWidget {
                   date,
                   style: TextStyle(
                     fontSize: 20,
-                    fontWeight:FontWeight.w500 ,
+                    fontWeight: FontWeight.w500,
                     color: Colors.grey.shade700, // Softer color for readability
                   ),
                 ),
@@ -233,8 +235,11 @@ class SaleItem extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      status == "Completed" ? Icons.check_circle : Icons.timelapse,
-                      color: status == "Completed" ? Colors.green : Colors.orange,
+                      status == "Completed"
+                          ? Icons.check_circle
+                          : Icons.timelapse,
+                      color:
+                          status == "Completed" ? Colors.green : Colors.orange,
                       size: 25,
                     ),
                     const SizedBox(width: 4),
@@ -242,7 +247,9 @@ class SaleItem extends StatelessWidget {
                       status,
                       style: TextStyle(
                         fontSize: 20, // Bigger status text
-                        color: status == "Completed" ? Colors.green : Colors.orange,
+                        color: status == "Completed"
+                            ? Colors.green
+                            : Colors.orange,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -252,7 +259,7 @@ class SaleItem extends StatelessWidget {
                 Text(
                   amount,
                   style: const TextStyle(
-                    fontSize: 25,  // Larger font for amount
+                    fontSize: 25, // Larger font for amount
                     fontWeight: FontWeight.w600,
                     color: Colors.black,
                   ),
