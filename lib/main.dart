@@ -76,6 +76,7 @@ class MyApp extends StatelessWidget {
           labelStyle: const TextStyle(color: Colors.black),
         ),
       ),
+      debugShowCheckedModeBanner: false,
       home: const LoginScreen(),
     );
   }

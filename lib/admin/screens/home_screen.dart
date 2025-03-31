@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       drawer: _isLoading ? null : NavigationDrawer(onPageSelected: _onPageSelected),
       appBar: AppBar(
-        title: Text(pageTitles[_selectedPageIndex], style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(pageTitles[_selectedPageIndex], style: const TextStyle(fontSize:30, fontWeight:FontWeight.w500)),
       ),
       body: _isLoading
           ? Center(child: SpinKitFadingCircle(color: Theme.of(context).primaryColor, size: 50.0))
@@ -107,7 +107,7 @@ class NavigationDrawer extends StatelessWidget {
           Expanded(
             child: ListView(
               children: [
-                _buildDrawerItem(Icons.dashboard, 'Dashboard', 0),
+                _buildDrawerItem(Icons.dashboard,  'Dashboard', 0),
                 _buildDrawerItem(Icons.people, 'Staff Management', 1),
                 ExpansionTile(
                   leading: const Icon(Icons.directions_car),
