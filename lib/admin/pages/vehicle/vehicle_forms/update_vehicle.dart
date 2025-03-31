@@ -209,76 +209,79 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: _isUpdating
-          ? const SingleChildScrollView(
-              child: SizedBox(
-                child: Center(
-                  child: SpinKitThreeBounce(
-                    color: Colors.blueGrey,
-                    size: 30.0,
+    return PopScope(
+      canPop: !_isUpdating,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: _isUpdating
+            ? const SingleChildScrollView(
+                child: SizedBox(
+                  child: Center(
+                    child: SpinKitThreeBounce(
+                      color: Colors.blueGrey,
+                      size: 30.0,
+                    ),
                   ),
                 ),
+              )
+            : Form(
+                key: _formKey,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    const Text("Update Vehicle",
+                        style: TextStyle(
+                            fontSize: 22, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 5),
+                    const Text("Form for updating vehicle details.",
+                        style: TextStyle(fontSize: 14, color: Colors.grey)),
+                    const SizedBox(height: 10),
+                    Text("Vehicle ID: ${widget.vehicleId}",
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green)),
+                    const SizedBox(height: 5),
+                    _buildTextField("Brand", _brandController),
+                    _buildTextField("Model", _modelController),
+                    _buildTextField("Plate Number", _plateNumberController),
+                    _buildTextField("Body Type", _bodyTypeController),
+                    _buildTextField("Color", _colorController),
+                    _buildTextField("Rental Rate", _rentalRateController,
+                        keyboard: TextInputType.number),
+                    _buildDropdownField(
+                        "Status", _status, ["Available", "Unavailable"]),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          onPressed: (_isUpdating || !_hasChanges())
+                              ? null
+                              : _updateVehicle,
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue),
+                          child: _isUpdating
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2))
+                              : const Text("Update",
+                                  style: TextStyle(color: Colors.white)),
+                        ),
+                        const SizedBox(width: 5),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Cancel",
+                              style: TextStyle(color: Colors.grey)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            )
-          : Form(
-              key: _formKey,
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  const Text("Update Vehicle",
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
-                  const Text("Form for updating vehicle details.",
-                      style: TextStyle(fontSize: 14, color: Colors.grey)),
-                  const SizedBox(height: 10),
-                  Text("Vehicle ID: ${widget.vehicleId}",
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.green)),
-                  const SizedBox(height: 5),
-                  _buildTextField("Brand", _brandController),
-                  _buildTextField("Model", _modelController),
-                  _buildTextField("Plate Number", _plateNumberController),
-                  _buildTextField("Body Type", _bodyTypeController),
-                  _buildTextField("Color", _colorController),
-                  _buildTextField("Rental Rate", _rentalRateController,
-                      keyboard: TextInputType.number),
-                  _buildDropdownField(
-                      "Status", _status, ["Available", "Unavailable"]),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ElevatedButton(
-                        onPressed: (_isUpdating || !_hasChanges())
-                            ? null
-                            : _updateVehicle,
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue),
-                        child: _isUpdating
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2))
-                            : const Text("Update",
-                                style: TextStyle(color: Colors.white)),
-                      ),
-                      const SizedBox(width: 5),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancel",
-                            style: TextStyle(color: Colors.grey)),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+      ),
     );
   }
 
@@ -289,8 +292,8 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
       child: TextFormField(
         controller: controller,
         keyboardType: keyboard,
-        decoration:
-            InputDecoration(labelText: label, border: const OutlineInputBorder()),
+        decoration: InputDecoration(
+            labelText: label, border: const OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
       ),
@@ -307,8 +310,8 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
             _status = newValue;
           });
         },
-        decoration:
-            InputDecoration(labelText: label, border: const OutlineInputBorder()),
+        decoration: InputDecoration(
+            labelText: label, border: const OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
         items: items

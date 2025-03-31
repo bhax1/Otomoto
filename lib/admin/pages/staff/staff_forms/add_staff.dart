@@ -162,90 +162,93 @@ class _AddStaffFormState extends State<AddStaffForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: _isLoading
-          ? const SingleChildScrollView(
-              child: SizedBox(
-                child: Center(
-                  child: SpinKitThreeBounce(
-                    color: Colors.blueGrey,
-                    size: 30.0,
+    return PopScope(
+      canPop: !_isLoading,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: _isLoading
+            ? const SingleChildScrollView(
+                child: SizedBox(
+                  child: Center(
+                    child: SpinKitThreeBounce(
+                      color: Colors.blueGrey,
+                      size: 30.0,
+                    ),
+                  ),
+                ),
+              )
+            : Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Add Staff",
+                          style: TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 5),
+                      const Text(
+                        "Fill out the form below to add a new staff member.",
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Expanded(
+                              child: _buildTextField("First Name", _firstName)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                              child: _buildTextField("Last Name", _lastName)),
+                        ],
+                      ),
+                      _buildTextField("Address", _address),
+                      _buildTextField("Contact Number", _contact,
+                          keyboard: TextInputType.phone),
+                      _buildTextField("Email", _email),
+                      _buildTextField("Job Position", _jobPosition),
+                      _buildTextField("Emergency Contact", _emergencyContact,
+                          keyboard: TextInputType.phone),
+                      const Text(
+                        "Birthdate",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      _buildDatePickerField("Birthdate", _birthdate,
+                          (date) => setState(() => _birthdate = date)),
+                      const Text(
+                        "Hire Date",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      _buildDatePickerField("Hire Date", _hireDate,
+                          (date) => setState(() => _hireDate = date)),
+                      _buildGenderDropdown(),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton(
+                            onPressed: _submitForm,
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                minimumSize: const Size(90, 40)),
+                            child: const Text("Submit",
+                                style: TextStyle(color: Colors.white)),
+                          ),
+                          const SizedBox(width: 10),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Cancel",
+                                style: TextStyle(color: Colors.grey)),
+                          ),
+                        ],
+                      )
+                    ],
                   ),
                 ),
               ),
-            )
-          : Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Add Staff",
-                        style: TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 5),
-                    const Text(
-                      "Fill out the form below to add a new staff member.",
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 5),
-                    Row(
-                      children: [
-                        Expanded(
-                            child: _buildTextField("First Name", _firstName)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                            child: _buildTextField("Last Name", _lastName)),
-                      ],
-                    ),
-                    _buildTextField("Address", _address),
-                    _buildTextField("Contact Number", _contact,
-                        keyboard: TextInputType.phone),
-                    _buildTextField("Email", _email),
-                    _buildTextField("Job Position", _jobPosition),
-                    _buildTextField("Emergency Contact", _emergencyContact,
-                        keyboard: TextInputType.phone),
-                    const Text(
-                      "Birthdate",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    _buildDatePickerField("Birthdate", _birthdate,
-                        (date) => setState(() => _birthdate = date)),
-                    const Text(
-                      "Hire Date",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    _buildDatePickerField("Hire Date", _hireDate,
-                        (date) => setState(() => _hireDate = date)),
-                    _buildGenderDropdown(),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        ElevatedButton(
-                          onPressed: _submitForm,
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              minimumSize: const Size(90, 40)),
-                          child: const Text("Submit",
-                              style: TextStyle(color: Colors.white)),
-                        ),
-                        const SizedBox(width: 10),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("Cancel",
-                              style: TextStyle(color: Colors.grey)),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            ),
+      ),
     );
   }
 
@@ -256,8 +259,8 @@ class _AddStaffFormState extends State<AddStaffForm> {
       child: TextFormField(
         controller: controller,
         keyboardType: keyboard,
-        decoration:
-            InputDecoration(labelText: label, border: const OutlineInputBorder()),
+        decoration: InputDecoration(
+            labelText: label, border: const OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
       ),

@@ -122,62 +122,67 @@ class _AddVehicleFormState extends State<AddVehicleForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: _isLoading
-          ? const SingleChildScrollView(
-              child: SizedBox(
-                child: Center(
-                  child: SpinKitThreeBounce(
-                    color: Colors.blueGrey,
-                    size: 30.0,
+    return PopScope(
+      canPop: !_isLoading,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: _isLoading
+            ? const SingleChildScrollView(
+                child: SizedBox(
+                  child: Center(
+                    child: SpinKitThreeBounce(
+                      color: Colors.blueGrey,
+                      size: 30.0,
+                    ),
                   ),
                 ),
-              ),
-            )
-          : Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Add Vehicle",
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
-                  const Text(
-                    "Form for adding a staff member.",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildTextField("Brand", _controllers[0]),
-                  _buildTextField("Model", _controllers[1]),
-                  _buildTextField("Plate Number", _controllers[2]),
-                  _buildTextField("Body Type", _controllers[3]),
-                  _buildTextField("Color", _controllers[4]),
-                  _buildTextField("Rental Rate", _controllers[5],
-                      keyboard: TextInputType.number),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ElevatedButton(
+              )
+            : Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Add Vehicle",
+                        style: TextStyle(
+                            fontSize: 22, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 5),
+                    const Text(
+                      "Form for adding a staff member.",
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 10),
+                    _buildTextField("Brand", _controllers[0]),
+                    _buildTextField("Model", _controllers[1]),
+                    _buildTextField("Plate Number", _controllers[2]),
+                    _buildTextField("Body Type", _controllers[3]),
+                    _buildTextField("Color", _controllers[4]),
+                    _buildTextField("Rental Rate", _controllers[5],
+                        keyboard: TextInputType.number),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
                           ),
                           onPressed: _isLoading ? null : _submitForm,
                           child: const Text("Submit",
-                              style: TextStyle(color: Colors.white))),
-                      const SizedBox(width: 5),
-                      TextButton(
+                              style: TextStyle(color: Colors.white)),
+                        ),
+                        const SizedBox(width: 5),
+                        TextButton(
                           onPressed: () => Navigator.pop(context),
                           child: const Text("Cancel",
-                              style: TextStyle(color: Colors.grey))),
-                    ],
-                  )
-                ],
+                              style: TextStyle(color: Colors.grey)),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 
@@ -188,8 +193,8 @@ class _AddVehicleFormState extends State<AddVehicleForm> {
       child: TextFormField(
         controller: controller,
         keyboardType: keyboard,
-        decoration:
-            InputDecoration(labelText: label, border: const OutlineInputBorder()),
+        decoration: InputDecoration(
+            labelText: label, border: const OutlineInputBorder()),
         validator: (value) =>
             value == null || value.isEmpty ? 'Required' : null,
       ),
