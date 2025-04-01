@@ -80,18 +80,38 @@ class _AddStaffFormState extends State<AddStaffForm> {
         'password': hashedPassword, // Store hashed password
         'created_at': FieldValue.serverTimestamp(),
         'lastUpdated': FieldValue.serverTimestamp(),
-        'status': true,
+        'status': "Active",
       });
 
       _showSuccessDialog("${_firstName.text} ${_lastName.text}");
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to add staff.")),
-      );
+      _showErrorDialog("Failed to add staff.");
     } finally {
       setState(() => _isLoading = false);
     }
   }
+
+  void _showErrorDialog(String message) => showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.error, color: Colors.red),
+              SizedBox(width: 8),
+              Text("Oops"),
+            ],
+          ),
+          content: Text(message),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text("OK", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
 
   Future<bool?> _showConfirmationDialog() {
     return showDialog<bool>(

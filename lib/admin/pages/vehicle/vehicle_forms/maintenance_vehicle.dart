@@ -58,11 +58,8 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
     final overlappingMaintenance = await _checkOverlappingMaintenance();
 
     if (overlappingMaintenance) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text(
-                "There is already maintenance scheduled during these dates.")),
-      );
+      _showErrorDialog(
+          "There is already maintenance scheduled during these dates.");
       return;
     }
 
@@ -95,13 +92,33 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
 
       _showSuccessDialog();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to schedule maintenance.")),
-      );
+      _showErrorDialog("Failed to schedule maintenance.");
     } finally {
       setState(() => _isLoading = false);
     }
   }
+
+  void _showErrorDialog(String message) => showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.error, color: Colors.red),
+              SizedBox(width: 8),
+              Text("Oops"),
+            ],
+          ),
+          content: Text(message),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text("OK", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
 
   Future<bool> _checkOverlappingMaintenance() async {
     final maintenanceCollection =

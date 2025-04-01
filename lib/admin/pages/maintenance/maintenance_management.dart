@@ -325,7 +325,8 @@ class MaintenanceDataSource extends DataTableSource {
               Icons.visibility, Colors.orange, () => onView(index)),
           if (record['status'] != "Cancelled" &&
               record['status'] != "Done" &&
-              record['status'] != "Overdue") ...[
+              record['status'] != "Overdue" &&
+              record['status'] != "Vehicle Removed") ...[
             _buildIconButton(Icons.update, Colors.blue, () => onUpdate(index)),
             _buildIconButton(
                 Icons.cancel_outlined, Colors.red, () => onCancel(index)),
@@ -362,6 +363,8 @@ class MaintenanceDataSource extends DataTableSource {
         return Colors.redAccent;
       case "Overdue":
         return Colors.red;
+      case "Vehicle Removed":
+        return Colors.blueGrey;
       default:
         return Colors.black;
     }

@@ -34,7 +34,16 @@ class _DeleteVehicleDialogState extends State<DeleteVehicleDialog> {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        await vehicleCollection.doc(querySnapshot.docs.first.id).delete();
+        await querySnapshot.docs.first.reference.update({"status": "Removed"});
+
+        final maintenanceQuery = await FirebaseFirestore.instance
+            .collection('maintenance')
+            .where('vehicle_id', isEqualTo: vehicleId)
+            .get();
+
+        for (var doc in maintenanceQuery.docs) {
+          await doc.reference.update({"status": "Vehicle Removed"});
+        }
 
         if (mounted) {
           _showResultDialog("Success",
@@ -42,16 +51,64 @@ class _DeleteVehicleDialogState extends State<DeleteVehicleDialog> {
         }
       } else {
         if (mounted) {
-          _showResultDialog("Error", "Vehicle not found.", Colors.orange);
+          _showErrorDialog("Vehicle not found.");
         }
       }
     } catch (e) {
       if (mounted) {
-        _showResultDialog("Error", "Failed to delete vehicle.", Colors.red);
+        _showErrorDialog("Failed to delete vehicle.");
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _showErrorDialog(String message) => showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.error, color: Colors.red),
+              SizedBox(width: 8),
+              Text("Oops"),
+            ],
+          ),
+          content: Text(message),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text("OK", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+
+  void _confirmDeletion() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Removal"),
+        content: Text(
+            'Are you sure you want to remove "${widget.brand} ${widget.model}" with Plate Number "${widget.plateNumber}"? \n\nThis action is irreversible and cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("No", style: TextStyle(color: Colors.blueGrey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteVehicle();
+            },
+            child: const Text("Yes, Cancel",
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showResultDialog(String title, String message, Color color) {
@@ -125,7 +182,7 @@ class _DeleteVehicleDialogState extends State<DeleteVehicleDialog> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: _deleteVehicle,
+                  onPressed: _confirmDeletion,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                   ),

@@ -260,7 +260,6 @@ class StaffDataSource extends DataTableSource {
   DataRow? getRow(int index) {
     if (index >= staff.length) return null;
     final staffMember = staff[index];
-    bool isActive = staffMember['status'] == 'Active';
 
     return DataRow(cells: [
       DataCell(Text(staffMember['id'])),
@@ -271,10 +270,14 @@ class StaffDataSource extends DataTableSource {
       DataCell(Text(staffMember['email'])),
       DataCell(
         Text(
-          staffMember['status']!,
+          staffMember['status'],
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: isActive ? Colors.green : Colors.red,
+            color: staffMember['status'] == 'Active'
+                ? Colors.green
+                : staffMember['status'] == 'Inactive'
+                    ? Colors.red
+                    : Colors.blueGrey,
           ),
         ),
       ),
@@ -283,8 +286,10 @@ class StaffDataSource extends DataTableSource {
           children: [
             _buildIconButton(
                 Icons.visibility, Colors.orange, () => onView(index)),
-            _buildIconButton(Icons.edit, Colors.blue, () => onUpdate(index)),
-            _buildIconButton(Icons.delete, Colors.red, () => onDelete(index)),
+            if (staffMember['status'] != "Removed") ...[
+              _buildIconButton(Icons.edit, Colors.blue, () => onUpdate(index)),
+              _buildIconButton(Icons.delete, Colors.red, () => onDelete(index)),
+            ]
           ],
         ),
       ),

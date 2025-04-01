@@ -312,7 +312,9 @@ class VehicleDataSource extends DataTableSource {
               ? Colors.green
               : vehicle['status'] == 'Unavailable'
                   ? Colors.red
-                  : Colors.orange,
+                  : vehicle['status'] == 'Under Maintenance'
+                      ? Colors.orange
+                      : Colors.blueGrey,
           fontWeight: FontWeight.bold,
         ),
       )),
@@ -320,10 +322,12 @@ class VehicleDataSource extends DataTableSource {
         children: [
           _buildIconButton(
               Icons.visibility, Colors.orange, () => onView(index)),
-          _buildIconButton(Icons.edit, Colors.blue, () => onUpdate(index)),
-          _buildIconButton(Icons.car_crash_sharp, Colors.blueGrey,
-              () => onMaintenance(index)),
-          _buildIconButton(Icons.delete, Colors.red, () => onDelete(index)),
+          if (vehicle['status'] != "Removed") ...[
+            _buildIconButton(Icons.edit, Colors.blue, () => onUpdate(index)),
+            _buildIconButton(Icons.car_crash_sharp, Colors.blueGrey,
+                () => onMaintenance(index)),
+            _buildIconButton(Icons.delete, Colors.red, () => onDelete(index)),
+          ]
         ],
       )),
     ]);

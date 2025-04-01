@@ -104,12 +104,20 @@ class _AddVehicleFormState extends State<AddVehicleForm> {
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: const Text("Error"),
+          title: const Row(
+            children: [
+              Icon(Icons.error, color: Colors.red),
+              SizedBox(width: 8),
+              Text("Oops"),
+            ],
+          ),
           content: Text(message),
           actions: [
             ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK")),
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text("OK", style: TextStyle(color: Colors.white)),
+            ),
           ],
         ),
       );

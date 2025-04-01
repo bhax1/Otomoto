@@ -139,10 +139,12 @@ class _ViewStaffFormState extends State<ViewStaffForm> {
                             Icons.email, "Email: ${staffData!['email']}"),
                         _buildInfoRow(
                           Icons.verified,
-                          "Status: ${staffData!['status'] == true ? "Active" : "Inactive"}",
-                          color: staffData!['status'] == true
+                          "Status: ${staffData!['status']}",
+                          color: staffData?['status'] == "Active"
                               ? Colors.green
-                              : Colors.red,
+                              : staffData?['status'] == "Inactive"
+                                  ? Colors.red
+                                  : Colors.deepOrangeAccent,
                         ),
                         const SizedBox(height: 20),
                         SizedBox(

@@ -125,33 +125,27 @@ class _UpdateVehicleFormState extends State<UpdateVehicleForm> {
     }
   }
 
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Error"),
-          content: Row(
+  void _showErrorDialog(String message) => showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Row(
             children: [
-              const Icon(Icons.error_outline, color: Colors.red),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(message),
-              ),
+              Icon(Icons.error, color: Colors.red),
+              SizedBox(width: 8),
+              Text("Oops"),
             ],
           ),
+          content: Text(message),
           actions: [
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
               child: const Text("OK", style: TextStyle(color: Colors.white)),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+      );
 
   Future<bool?> _showConfirmationDialog() {
     return showDialog<bool>(

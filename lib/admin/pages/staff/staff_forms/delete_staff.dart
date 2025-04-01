@@ -30,7 +30,7 @@ class _DeleteStaffDialogState extends State<DeleteStaffDialog> {
           await staffCollection.where('staff_id', isEqualTo: staffId).get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        await staffCollection.doc(querySnapshot.docs.first.id).delete();
+        await querySnapshot.docs.first.reference.update({"status": "Removed"});
 
         if (mounted) {
           _showResultDialog(
@@ -40,18 +40,66 @@ class _DeleteStaffDialogState extends State<DeleteStaffDialog> {
         }
       } else {
         if (mounted) {
-          _showResultDialog("Error", "Staff not found.", Colors.orange);
+          _showErrorDialog("Staff not found.");
         }
       }
     } catch (e) {
       if (mounted) {
         if (mounted) {
-          _showResultDialog("Error", "Failed to delete staff.", Colors.red);
+          _showErrorDialog("Failed to delete staff.");
         }
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _showErrorDialog(String message) => showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.error, color: Colors.red),
+              SizedBox(width: 8),
+              Text("Oops"),
+            ],
+          ),
+          content: Text(message),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text("OK", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+
+  void _confirmDeletion() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Removal"),
+        content: Text(
+            'Are you sure you want to delete "${widget.staffName}"? \n\nThis action is irreversible and cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("No", style: TextStyle(color: Colors.blueGrey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteStaff();
+            },
+            child: const Text("Yes, Cancel",
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showResultDialog(String title, String message, Color color) {
@@ -128,7 +176,7 @@ class _DeleteStaffDialogState extends State<DeleteStaffDialog> {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
-                        onPressed: _deleteStaff,
+                        onPressed: _confirmDeletion,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                         ),

@@ -30,7 +30,7 @@ class FetchService {
           'job_position': doc['job_position'] ?? '',
           'contact': doc['contact_num'] ?? '',
           'email': doc['email'] ?? '',
-          'status': doc['status'] == true ? 'Active' : 'Inactive',
+          'status': doc['status'],
         };
       }).toList();
     });

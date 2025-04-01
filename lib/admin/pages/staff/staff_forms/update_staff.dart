@@ -24,7 +24,7 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
   DateTime? _birthdate;
   DateTime? _hireDate;
   String? _gender;
-  bool? _status;
+  String? _status;
   bool _isLoading = false;
   double _opacity = 0.0;
   Map<String, dynamic> _initialValues = {};
@@ -117,13 +117,11 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
         });
       } else {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("No data found.")));
+        _showErrorDialog("No data found.");
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Failed to fetch staff data: ${e.toString()}")));
+      _showErrorDialog("Failed to fetch staff data: ${e.toString()}");
     }
   }
 
@@ -166,9 +164,7 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
       }
       _showSuccessDialog("${_firstName.text} ${_lastName.text}");
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to update staff.")),
-      );
+      _showErrorDialog("Failed to update staff.");
     } finally {
       setState(() => _isLoading = false);
     }
@@ -195,6 +191,28 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
       ),
     );
   }
+
+  void _showErrorDialog(String message) => showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.error, color: Colors.red),
+              SizedBox(width: 8),
+              Text("Oops"),
+            ],
+          ),
+          content: Text(message),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text("OK", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
 
   void _showSuccessDialog(String staffName) {
     showDialog(
@@ -317,10 +335,10 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
                         _buildGenderDropdown(),
                         SwitchListTile(
                           title: const Text("Active Status"),
-                          value: _status ?? true,
+                          value: _status == "Active",
                           onChanged: (value) {
                             setState(() {
-                              _status = value;
+                              _status = value ? "Active" : "Inactive";
                             });
                           },
                         ),
