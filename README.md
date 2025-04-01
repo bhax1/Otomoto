@@ -1,4 +1,4 @@
-# otomoto
+# Otomoto
 
 A new Flutter project.
 
