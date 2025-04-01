@@ -21,20 +21,11 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         return windows;
       case TargetPlatform.linux:
@@ -68,4 +59,31 @@ class DefaultFirebaseOptions {
     storageBucket: 'otomoto-1533c.firebasestorage.app',
     measurementId: 'G-2G1YXFKVD8',
   );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDRnjQ4-P3i_380x1atdGbYOVkmrUzH6kE',
+    appId: '1:378817763502:ios:7263e8f30566fb7f12353f',
+    messagingSenderId: '378817763502',
+    projectId: 'otomoto-1533c',
+    storageBucket: 'otomoto-1533c.firebasestorage.app',
+    iosBundleId: 'com.example.otomoto',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyDRnjQ4-P3i_380x1atdGbYOVkmrUzH6kE',
+    appId: '1:378817763502:ios:7263e8f30566fb7f12353f',
+    messagingSenderId: '378817763502',
+    projectId: 'otomoto-1533c',
+    storageBucket: 'otomoto-1533c.firebasestorage.app',
+    iosBundleId: 'com.example.otomoto',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyB_hNOA4xrp0622-IHRolE6eeuchWmcKX0',
+    appId: '1:378817763502:android:56229b0040ed0afc12353f',
+    messagingSenderId: '378817763502',
+    projectId: 'otomoto-1533c',
+    storageBucket: 'otomoto-1533c.firebasestorage.app',
+  );
+
 }

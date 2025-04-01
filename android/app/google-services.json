@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "378817763502",
+    "project_id": "otomoto-1533c",
+    "storage_bucket": "otomoto-1533c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:378817763502:android:56229b0040ed0afc12353f",
+        "android_client_info": {
+          "package_name": "com.example.otomoto"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_hNOA4xrp0622-IHRolE6eeuchWmcKX0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
