@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:otomoto/admin/pages/dashboard/dashboard.dart';
 import 'package:otomoto/admin/pages/staff/staff_management.dart';
 import 'package:otomoto/admin/pages/maintenance/maintenance_management.dart';
@@ -15,7 +14,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedPageIndex = 0;
-  bool _isLoading = true;
 
   final List<String> pageTitles = [
     'Dashboard',
@@ -43,43 +41,20 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
   }
-
-  Future<void> _loadData() async {
-    try {
-      await Future.wait([
-        loadDashboardData(),
-        loadStaffData(),
-        loadVehicleData(),
-      ]);
-      setState(() {
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> loadDashboardData() async => await Future.delayed(const Duration(seconds: 2));
-  Future<void> loadStaffData() async => await Future.delayed(const Duration(seconds: 2));
-  Future<void> loadVehicleData() async => await Future.delayed(const Duration(seconds: 2));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: _isLoading ? null : NavigationDrawer(onPageSelected: _onPageSelected),
+      drawer: NavigationDrawer(onPageSelected: _onPageSelected),
       appBar: AppBar(
-        title: Text(pageTitles[_selectedPageIndex], style: const TextStyle(fontSize:30, fontWeight:FontWeight.w500)),
+        title: Text(pageTitles[_selectedPageIndex],
+            style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w500)),
       ),
-      body: _isLoading
-          ? Center(child: SpinKitFadingCircle(color: Theme.of(context).primaryColor, size: 50.0))
-          : AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500),
-              child: pageBodies[_selectedPageIndex],
-            ),
+      body: IndexedStack(
+        index: _selectedPageIndex,
+        children: pageBodies,
+      ),
     );
   }
 }
@@ -95,7 +70,8 @@ class NavigationDrawer extends StatelessWidget {
         children: [
           // User Header with Avatar
           UserAccountsDrawerHeader(
-            accountName: const Text("Admin User", style: TextStyle(fontWeight: FontWeight.bold)),
+            accountName: const Text("Admin User",
+                style: TextStyle(fontWeight: FontWeight.bold)),
             accountEmail: const Text("admin@example.com"),
             currentAccountPicture: const CircleAvatar(
               backgroundImage: AssetImage('assets/avatar/admin_avatar.png'),
@@ -107,7 +83,7 @@ class NavigationDrawer extends StatelessWidget {
           Expanded(
             child: ListView(
               children: [
-                _buildDrawerItem(Icons.dashboard,  'Dashboard', 0),
+                _buildDrawerItem(Icons.dashboard, 'Dashboard', 0),
                 _buildDrawerItem(Icons.people, 'Staff Management', 1),
                 ExpansionTile(
                   leading: const Icon(Icons.directions_car),
@@ -149,7 +125,8 @@ class NavigationDrawer extends StatelessWidget {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (context, animation, secondaryAnimation) => const AdminLogin(),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const AdminLogin(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },

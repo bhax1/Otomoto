@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:otomoto/admin/pages/staff/staff_forms/add_staff.dart';
 import 'package:otomoto/admin/pages/staff/staff_forms/delete_staff.dart';
 import 'package:otomoto/admin/pages/staff/staff_forms/update_staff.dart';
 import 'package:otomoto/admin/pages/staff/staff_forms/view_staff.dart';
+import 'package:otomoto/logic/fetch_service.dart';
 
 class StaffManagement extends StatefulWidget {
   const StaffManagement({super.key});
@@ -20,30 +20,26 @@ class _StaffManagementState extends State<StaffManagement> {
   static const int rowsPerPage = 10;
   bool _isLoading = true;
 
+  final FetchService _fetchService = FetchService();
+  bool _dataFetched = false; // Flag to track if data is already fetched
+
   @override
-  void initState() {
-    super.initState();
-    _dataSource = StaffDataSource([], _viewStaff, _updateStaff, _deleteStaff);
-    _fetchStaff();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_dataFetched) {
+      _fetchStaff(); // Fetch staff data only when the page is visible
+      setState(() {
+        _dataFetched = true;
+      });
+    }
   }
 
   void _fetchStaff() {
-    FirebaseFirestore.instance.collection('staffs').snapshots().listen(
-      (snapshot) {
+    _fetchService.fetchStaffs().listen(
+      (staffData) {
         if (!mounted) return;
         setState(() {
-          staffList = snapshot.docs
-              .map((doc) => {
-                    'id': doc['staff_id'].toString(),
-                    'firstname': doc['firstname'] ?? '',
-                    'lastname': doc['lastname'] ?? '',
-                    'job_position': doc['job_position'] ?? '',
-                    'contact': doc['contact_num'] ?? '',
-                    'email': doc['email'] ?? '',
-                    'status': doc['status'] == true ? 'Active' : 'Inactive',
-                  })
-              .toList();
-
+          staffList = staffData;
           filteredStaff = List.from(staffList);
           _dataSource = StaffDataSource(
               filteredStaff, _viewStaff, _updateStaff, _deleteStaff);
@@ -54,49 +50,47 @@ class _StaffManagementState extends State<StaffManagement> {
         if (!mounted) return;
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error fetching staff: $error')),
+          SnackBar(content: Text('Error fetching staffs: $error')),
         );
       },
     );
   }
 
   void _filterStaff(String query) {
+    _filter(query, 'name');
+  }
+
+  void _filterByStaffId(String query) {
+    _filter(query, 'id');
+  }
+
+  // A shared method to handle filtering by name or ID
+  void _filter(String query, String type) {
     setState(() {
       filteredStaff = query.isEmpty
           ? List.from(staffList)
           : staffList.where((staff) {
-              String fullName =
-                  "${staff['firstname']!} ${staff['lastname']!}".toLowerCase();
-              return fullName.contains(query.toLowerCase()) ||
-                  staff['firstname']!
-                      .toLowerCase()
-                      .contains(query.toLowerCase()) ||
-                  staff['lastname']!
-                      .toLowerCase()
-                      .contains(query.toLowerCase()) ||
-                  staff['job_position']!
-                      .toLowerCase()
-                      .contains(query.toLowerCase()) ||
-                  staff['contact']!
-                      .toLowerCase()
-                      .contains(query.toLowerCase()) ||
-                  staff['email']!.toLowerCase().contains(query.toLowerCase());
+              if (type == 'name') {
+                String fullName =
+                    "${staff['firstname']} ${staff['lastname']}".toLowerCase();
+                return fullName.contains(query.toLowerCase()) ||
+                    staff['firstname']!
+                        .toLowerCase()
+                        .contains(query.toLowerCase()) ||
+                    staff['lastname']!
+                        .toLowerCase()
+                        .contains(query.toLowerCase()) ||
+                    staff['job_position']!
+                        .toLowerCase()
+                        .contains(query.toLowerCase()) ||
+                    staff['contact']!
+                        .toLowerCase()
+                        .contains(query.toLowerCase()) ||
+                    staff['email']!.toLowerCase().contains(query.toLowerCase());
+              } else {
+                return staff['id']!.toLowerCase().contains(query.toLowerCase());
+              }
             }).toList();
-
-      _dataSource = StaffDataSource(
-          filteredStaff, _viewStaff, _updateStaff, _deleteStaff);
-    });
-  }
-
-  void _filterByStaffId(String query) {
-    setState(() {
-      filteredStaff = query.isEmpty
-          ? List.from(staffList)
-          : staffList
-              .where((staff) =>
-                  staff['id']!.toLowerCase().contains(query.toLowerCase()))
-              .toList();
-
       _dataSource = StaffDataSource(
           filteredStaff, _viewStaff, _updateStaff, _deleteStaff);
     });
@@ -127,10 +121,11 @@ class _StaffManagementState extends State<StaffManagement> {
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: SizedBox(
-            width: 500,
-            child: UpdateStaffForm(
-              staffId: filteredStaff[index]['id']!,
-            )),
+          width: 500,
+          child: UpdateStaffForm(
+            staffId: filteredStaff[index]['id']!,
+          ),
+        ),
       ),
     );
   }
@@ -254,7 +249,7 @@ class _StaffManagementState extends State<StaffManagement> {
 }
 
 class StaffDataSource extends DataTableSource {
-  final List<Map<String, dynamic>> staff; // Changed to dynamic
+  final List<Map<String, dynamic>> staff;
   final Function(int) onView;
   final Function(int) onUpdate;
   final Function(int) onDelete;

@@ -54,6 +54,18 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
       return;
     }
 
+    // Check for overlapping maintenance dates before submission
+    final overlappingMaintenance = await _checkOverlappingMaintenance();
+
+    if (overlappingMaintenance) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                "There is already maintenance scheduled during these dates.")),
+      );
+      return;
+    }
+
     if (!await _showConfirmationDialog()) return;
 
     setState(() => _isLoading = true);
@@ -89,6 +101,20 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<bool> _checkOverlappingMaintenance() async {
+    final maintenanceCollection =
+        FirebaseFirestore.instance.collection('maintenance');
+
+    // Check for overlapping maintenance for the same vehicle
+    final snapshot = await maintenanceCollection
+        .where('vehicle_id', isEqualTo: int.tryParse(widget.vehicleId))
+        .where('start_date', isLessThanOrEqualTo: _end?.toIso8601String())
+        .where('end_date', isGreaterThanOrEqualTo: _start?.toIso8601String())
+        .get();
+
+    return snapshot.docs.isNotEmpty;
   }
 
   Future<bool> _showConfirmationDialog() async {

@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:otomoto/logic/fetch_service.dart';
 import 'package:otomoto/admin/pages/vehicle/vehicle_forms/add_vehicle.dart';
 import 'package:otomoto/admin/pages/vehicle/vehicle_forms/delete_vehicle.dart';
 import 'package:otomoto/admin/pages/vehicle/vehicle_forms/maintenance_vehicle.dart';
@@ -21,6 +21,8 @@ class _VehicleManagementState extends State<VehicleManagement> {
   static const int rowsPerPage = 10;
   bool _isLoading = true;
 
+  final FetchService _fetchService = FetchService();
+
   @override
   void initState() {
     super.initState();
@@ -30,23 +32,11 @@ class _VehicleManagementState extends State<VehicleManagement> {
   }
 
   void _fetchVehicles() {
-    FirebaseFirestore.instance.collection('vehicles').snapshots().listen(
-      (snapshot) {
+    _fetchService.fetchVehicles().listen(
+      (vehicles) {
         if (!mounted) return;
         setState(() {
-          vehicleList = snapshot.docs
-              .map((doc) => {
-                    'id': doc['vehicle_id'].toString(),
-                    'brand': doc['brand'] ?? '',
-                    'model': doc['model'] ?? '',
-                    'plate_num': doc['plate_num'] ?? '',
-                    'body_type': doc['body_type'] ?? '',
-                    'color': doc['color'] ?? '',
-                    'rental_rate': doc['rental_rate'] ?? '',
-                    'status': doc['status'] ?? '',
-                  })
-              .toList();
-
+          vehicleList = vehicles;
           filteredVehicles = List.from(vehicleList);
           _dataSource = VehicleDataSource(filteredVehicles, _viewVehicle,
               _updateVehicle, _maintenanceVehicle, _deleteVehicle);
@@ -57,7 +47,7 @@ class _VehicleManagementState extends State<VehicleManagement> {
         if (!mounted) return;
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error fetching staff: $error')),
+          SnackBar(content: Text('Error fetching vehicles: $error')),
         );
       },
     );

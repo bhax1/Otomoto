@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:otomoto/admin/pages/maintenance/maintenance_forms/cancel_maintenance.dart';
 import 'package:otomoto/admin/pages/maintenance/maintenance_forms/view_maintenance.dart';
+import 'package:otomoto/logic/fetch_service.dart';
 
 class VehicleMaintenance extends StatefulWidget {
   const VehicleMaintenance({super.key});
@@ -19,30 +20,45 @@ class _VehicleMaintenanceState extends State<VehicleMaintenance> {
   static const int rowsPerPage = 10;
   bool _isLoading = true;
 
+  final FetchService _fetchService = FetchService();
+
   @override
   void initState() {
     super.initState();
+    _updateOverdueMaintenanceStatus();
     _dataSource = MaintenanceDataSource([], _viewMaintenance,
         _updateMaintenance, _cancelMaintenance, _doneMaintenance);
     _fetchMaintenanceRecords();
   }
 
+  Future<void> _updateOverdueMaintenanceStatus() async {
+    try {
+      final maintenanceCollection =
+          FirebaseFirestore.instance.collection('maintenance');
+      final currentDate = DateTime.now();
+
+      final overdueSnapshot = await maintenanceCollection
+          .where('end_date', isLessThan: currentDate.toIso8601String())
+          .where('status', isNotEqualTo: 'Overdue')
+          .get();
+
+      for (var doc in overdueSnapshot.docs) {
+        await maintenanceCollection.doc(doc.id).update({
+          'status': 'Overdue',
+          'lastUpdated': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      print("Error updating overdue maintenance: $e");
+    }
+  }
+
   void _fetchMaintenanceRecords() {
-    FirebaseFirestore.instance.collection('maintenance').snapshots().listen(
-      (snapshot) {
+    _fetchService.fetchMaintenance().listen(
+      (maintenanceData) {
         if (!mounted) return;
         setState(() {
-          maintenanceList = snapshot.docs
-              .map((doc) => {
-                    'id': doc['maintenance_id'],
-                    'vehicle_id': doc['vehicle_id'],
-                    'maintenance_type': doc['maintenance_type'].join(", "),
-                    'start_date': doc['start_date'],
-                    'end_date': doc['end_date'],
-                    'status': doc['status'],
-                  })
-              .toList();
-
+          maintenanceList = maintenanceData;
           filteredMaintenance = List.from(maintenanceList);
           _dataSource = MaintenanceDataSource(
               filteredMaintenance,
@@ -87,11 +103,13 @@ class _VehicleMaintenanceState extends State<VehicleMaintenance> {
                       .toLowerCase()
                       .contains(query.toLowerCase());
 
-              bool matchesStatus = record['status']
-                  .toLowerCase()
-                  .contains(query.toLowerCase());
+              bool matchesStatus =
+                  record['status'].toLowerCase().contains(query.toLowerCase());
 
-              return matchesType || matchesStartDate || matchesEndDate || matchesStatus;
+              return matchesType ||
+                  matchesStartDate ||
+                  matchesEndDate ||
+                  matchesStatus;
             }).toList();
 
       _dataSource = MaintenanceDataSource(filteredMaintenance, _viewMaintenance,
@@ -306,7 +324,8 @@ class MaintenanceDataSource extends DataTableSource {
           _buildIconButton(
               Icons.visibility, Colors.orange, () => onView(index)),
           if (record['status'] != "Cancelled" &&
-              record['status'] != "Done") ...[
+              record['status'] != "Done" &&
+              record['status'] != "Overdue") ...[
             _buildIconButton(Icons.update, Colors.blue, () => onUpdate(index)),
             _buildIconButton(
                 Icons.cancel_outlined, Colors.red, () => onCancel(index)),
@@ -340,6 +359,8 @@ class MaintenanceDataSource extends DataTableSource {
       case "Active":
         return Colors.blue;
       case "Cancelled":
+        return Colors.redAccent;
+      case "Overdue":
         return Colors.red;
       default:
         return Colors.black;
