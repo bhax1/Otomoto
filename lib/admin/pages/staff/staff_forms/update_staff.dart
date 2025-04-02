@@ -349,9 +349,9 @@ class _UpdateStaffFormState extends State<UpdateStaffForm> {
                             ElevatedButton(
                               onPressed: _hasChanges() ? _updateStaff : null,
                               style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      _hasChanges() ? Colors.blue : Colors.grey,
-                                  minimumSize: const Size(90, 40)),
+                                backgroundColor:
+                                    _hasChanges() ? Colors.blue : Colors.grey,
+                              ),
                               child: const Text("Update",
                                   style: TextStyle(color: Colors.white)),
                             ),

@@ -127,6 +127,7 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
     // Check for overlapping maintenance for the same vehicle
     final snapshot = await maintenanceCollection
         .where('vehicle_id', isEqualTo: int.tryParse(widget.vehicleId))
+        .where('status', isNotEqualTo: "Cancelled")
         .where('start_date', isLessThanOrEqualTo: _end?.toIso8601String())
         .where('end_date', isGreaterThanOrEqualTo: _start?.toIso8601String())
         .get();
@@ -236,12 +237,19 @@ class _MaintenanceVehicleFormState extends State<MaintenanceVehicleForm> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         ElevatedButton(
-                            onPressed: _submitForm,
-                            child: const Text("Submit")),
+                          onPressed: _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                          ),
+                          child: const Text("Submit",
+                              style: TextStyle(color: Colors.white)),
+                        ),
                         const SizedBox(width: 10),
                         TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Cancel")),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Cancel",
+                              style: TextStyle(color: Colors.grey)),
+                        ),
                       ],
                     ),
                   ],
@@ -378,6 +386,7 @@ class _MultiSelectDialogState extends State<MultiSelectDialog> {
               .map(
                 (option) => CheckboxListTile(
                   title: Text(option),
+                  activeColor: Colors.green,
                   value: _tempSelectedValues.contains(option),
                   onChanged: (selected) {
                     setState(() {
@@ -393,12 +402,15 @@ class _MultiSelectDialogState extends State<MultiSelectDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context, null),
-          child: const Text("Cancel"),
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Dismiss", style: TextStyle(color: Colors.grey)),
         ),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, _tempSelectedValues),
-          child: const Text("Confirm"),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+          ),
+          child: const Text("Confirm", style: TextStyle(color: Colors.white)),
         ),
       ],
     );

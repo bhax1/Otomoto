@@ -107,11 +107,28 @@ class _CancelMaintenanceFormState extends State<CancelMaintenanceForm> {
       if (maintenanceQuery.docs.isNotEmpty) {
         await maintenanceQuery.docs.first.reference
             .update({"status": "Cancelled"});
-        if (mounted) Navigator.pop(context, 'Cancelled');
+        _showSuccessDialog();
       }
     } catch (error) {
       _showError('Failed to cancel maintenance: $error');
     }
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Success"),
+        content: const Text('Maintenance cancelled successfully.'),
+        actions: [
+          ElevatedButton(
+              onPressed: () =>
+                  Navigator.popUntil(context, (route) => route.isFirst),
+              child: const Text("OK"))
+        ],
+      ),
+    );
   }
 
   void _showError(String message) {

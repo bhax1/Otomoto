@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:otomoto/admin/pages/maintenance/maintenance_forms/cancel_maintenance.dart';
+import 'package:otomoto/admin/pages/maintenance/maintenance_forms/update_maintenance.dart';
 import 'package:otomoto/admin/pages/maintenance/maintenance_forms/view_maintenance.dart';
 import 'package:otomoto/logic/fetch_service.dart';
 
@@ -158,7 +159,21 @@ class _VehicleMaintenanceState extends State<VehicleMaintenance> {
     );
   }
 
-  void _updateMaintenance(int index) {}
+  void _updateMaintenance(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: SizedBox(
+          width: 500,
+          child: UpdateMaintenanceForm(
+            maintenanceId: filteredMaintenance[index]['id']!,
+            vehicleId: filteredMaintenance[index]['vehicle_id']!,
+          ),
+        ),
+      ),
+    );
+  }
 
   void _cancelMaintenance(int index) {
     showDialog(

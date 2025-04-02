@@ -31,15 +31,13 @@ class _ViewMaintenanceFormState extends State<ViewMaintenanceForm> {
 
   Future<void> _fetchData() async {
     try {
-      final results = await Future.wait([
-        _fetchVehicleData(),
-        _fetchMaintenanceData(),
-      ]);
+      final vehicle = await _fetchVehicleData();
+      final maintenance = await _fetchMaintenanceData();
 
       if (mounted) {
         setState(() {
-          vehicleData = results[0];
-          maintenanceData = results[1];
+          vehicleData = vehicle;
+          maintenanceData = maintenance;
           isLoading = false;
         });
 
@@ -58,7 +56,17 @@ class _ViewMaintenanceFormState extends State<ViewMaintenanceForm> {
         .where("vehicle_id", isEqualTo: widget.vehicleId)
         .limit(1)
         .get();
-    return snapshot.docs.isNotEmpty ? snapshot.docs.first.data() : null;
+
+    if (snapshot.docs.isNotEmpty) {
+      var data = snapshot.docs.first.data();
+      return {
+        'brand': data['brand'],
+        'model': data['model'],
+        'color': data['color'],
+        'plate_number': data['plate_number'],
+      };
+    }
+    return null;
   }
 
   Future<Map<String, dynamic>?> _fetchMaintenanceData() async {
@@ -67,7 +75,16 @@ class _ViewMaintenanceFormState extends State<ViewMaintenanceForm> {
         .where("maintenance_id", isEqualTo: widget.maintenanceId)
         .limit(1)
         .get();
-    return snapshot.docs.isNotEmpty ? snapshot.docs.first.data() : null;
+
+    if (snapshot.docs.isNotEmpty) {
+      var data = snapshot.docs.first.data();
+      return {
+        'maintenance_type': data['maintenance_type'],
+        'start_date': data['start_date'],
+        'end_date': data['end_date'],
+      };
+    }
+    return null;
   }
 
   void _showError(String message) {
@@ -124,8 +141,9 @@ class _ViewMaintenanceFormState extends State<ViewMaintenanceForm> {
                   _buildInfoRow(Icons.confirmation_number,
                       "Plate Number: ${vehicleData?['plate_number'] ?? 'N/A'}"),
                   const Divider(),
-                  _buildInfoRow(Icons.settings,
-                      "Maintenance Type: ${_getMaintenanceTypes()}"),
+                  _buildInfoRow(
+                      Icons.build_circle_outlined, "Maintenance Type:"),
+                  _buildInfoRows(_getMaintenanceTypes()),
                   _buildInfoRow(Icons.date_range,
                       "Start Date: ${_formatDate(maintenanceData?['start_date'])}"),
                   _buildInfoRow(Icons.event,
@@ -153,9 +171,9 @@ class _ViewMaintenanceFormState extends State<ViewMaintenanceForm> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String text, {Color? color}) {
+  Widget _buildInfoRow(IconData icon, String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Icon(icon, color: Colors.blueGrey),
@@ -163,10 +181,10 @@ class _ViewMaintenanceFormState extends State<ViewMaintenanceForm> {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: color ?? Colors.black87,
+                color: Colors.black87,
               ),
             ),
           ),
@@ -175,8 +193,32 @@ class _ViewMaintenanceFormState extends State<ViewMaintenanceForm> {
     );
   }
 
-  String _getMaintenanceTypes() =>
-      maintenanceData?['maintenance_type']?.join(", ") ?? "N/A";
+  Widget _buildInfoRows(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.indigo,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getMaintenanceTypes() {
+    var types = maintenanceData?['maintenance_type'];
+    if (types == null || types.isEmpty) return "N/A";
+    return types.map((type) => "      • $type").join("\n");
+  }
 
   String _formatDate(dynamic date) {
     if (date == null) return "N/A";
