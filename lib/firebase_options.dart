@@ -41,49 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCuWlVM__P9whHEqCvXwIRAci060V5M2Dg',
-    appId: '1:378817763502:web:096acb6272e18d2812353f',
-    messagingSenderId: '378817763502',
-    projectId: 'otomoto-1533c',
-    authDomain: 'otomoto-1533c.firebaseapp.com',
-    storageBucket: 'otomoto-1533c.firebasestorage.app',
-    measurementId: 'G-02CF5Y50MY',
+    apiKey: 'AIzaSyDf0csg4CIW0KgWHpYqx5dmviF-2MEvFgU',
+    appId: '1:1004725264440:web:bac96461cbe527c1ed86cd',
+    messagingSenderId: '1004725264440',
+    projectId: 'otomoto-840f7',
+    authDomain: 'otomoto-840f7.firebaseapp.com',
+    storageBucket: 'otomoto-840f7.firebasestorage.app',
+    measurementId: 'G-EEE7EDH1PL',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCuWlVM__P9whHEqCvXwIRAci060V5M2Dg',
-    appId: '1:378817763502:web:cec1ec8536c8fc4b12353f',
-    messagingSenderId: '378817763502',
-    projectId: 'otomoto-1533c',
-    authDomain: 'otomoto-1533c.firebaseapp.com',
-    storageBucket: 'otomoto-1533c.firebasestorage.app',
-    measurementId: 'G-2G1YXFKVD8',
+    apiKey: 'AIzaSyDf0csg4CIW0KgWHpYqx5dmviF-2MEvFgU',
+    appId: '1:1004725264440:web:97ab6359749f4b70ed86cd',
+    messagingSenderId: '1004725264440',
+    projectId: 'otomoto-840f7',
+    authDomain: 'otomoto-840f7.firebaseapp.com',
+    storageBucket: 'otomoto-840f7.firebasestorage.app',
+    measurementId: 'G-XLRKDSCR2Q',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDRnjQ4-P3i_380x1atdGbYOVkmrUzH6kE',
-    appId: '1:378817763502:ios:7263e8f30566fb7f12353f',
-    messagingSenderId: '378817763502',
-    projectId: 'otomoto-1533c',
-    storageBucket: 'otomoto-1533c.firebasestorage.app',
+    apiKey: 'AIzaSyCcSFOYH5PjIh18g0tl0oWGCs4-8C8oii8',
+    appId: '1:1004725264440:ios:1919828c97b20591ed86cd',
+    messagingSenderId: '1004725264440',
+    projectId: 'otomoto-840f7',
+    storageBucket: 'otomoto-840f7.firebasestorage.app',
     iosBundleId: 'com.example.otomoto',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDRnjQ4-P3i_380x1atdGbYOVkmrUzH6kE',
-    appId: '1:378817763502:ios:7263e8f30566fb7f12353f',
-    messagingSenderId: '378817763502',
-    projectId: 'otomoto-1533c',
-    storageBucket: 'otomoto-1533c.firebasestorage.app',
+    apiKey: 'AIzaSyCcSFOYH5PjIh18g0tl0oWGCs4-8C8oii8',
+    appId: '1:1004725264440:ios:1919828c97b20591ed86cd',
+    messagingSenderId: '1004725264440',
+    projectId: 'otomoto-840f7',
+    storageBucket: 'otomoto-840f7.firebasestorage.app',
     iosBundleId: 'com.example.otomoto',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyB_hNOA4xrp0622-IHRolE6eeuchWmcKX0',
-    appId: '1:378817763502:android:56229b0040ed0afc12353f',
-    messagingSenderId: '378817763502',
-    projectId: 'otomoto-1533c',
-    storageBucket: 'otomoto-1533c.firebasestorage.app',
+    apiKey: 'AIzaSyCUpa3hYzIrmOMqV7boufCNgLFd6QJAW8U',
+    appId: '1:1004725264440:android:fb6178885f1f4e48ed86cd',
+    messagingSenderId: '1004725264440',
+    projectId: 'otomoto-840f7',
+    storageBucket: 'otomoto-840f7.firebasestorage.app',
   );
 
 }
