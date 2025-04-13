@@ -1,15 +1,16 @@
 {
   "project_info": {
     "project_number": "1004725264440",
+    "firebase_url": "https://otomoto-840f7-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "otomoto-840f7",
     "storage_bucket": "otomoto-840f7.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1004725264440:android:fb6178885f1f4e48ed86cd",
+        "mobilesdk_app_id": "1:1004725264440:android:001bb72b6de8792ced86cd",
         "android_client_info": {
-          "package_name": "com.example.otomoto"
+          "package_name": "com.example.otomotos"
         }
       },
       "oauth_client": [],

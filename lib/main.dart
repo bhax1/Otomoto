@@ -12,7 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:window_manager/window_manager.dart';
-import 'dart:async'; // For Timer functionality
+import 'dart:async';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

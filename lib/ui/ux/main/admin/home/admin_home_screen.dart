@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:otomoto/archive/staff_management.dart';
 import 'package:otomoto/core/models/navigation_item.dart';
 import 'package:otomoto/core/widgets/home_scaffold.dart';
 import 'package:otomoto/auth/services/session_manager.dart';
 import 'package:otomoto/auth/providers/auth_service_provider.dart';
 import 'package:otomoto/ui/ux/login/admin_login.dart';
 import 'package:otomoto/core/models/user_model.dart';
+import 'package:otomoto/ui/ux/main/admin/pages/dashboard/dashboard.dart';
 
 class AdminHomeScreen extends ConsumerWidget {
   const AdminHomeScreen({super.key});
@@ -46,8 +48,8 @@ class AdminHomeScreen extends ConsumerWidget {
               'Profile Settings',
             ],
             pageBodies: const [
-              Center(child: Text('Dashboard')),
-              Center(child: Text('Staff Management')),
+              DashboardBody(),
+              StaffManagement(),
               Center(child: Text('Vehicle List Page')),
               Center(child: Text('Maintenance')),
               Center(child: Text('Profile Settings Page')),
