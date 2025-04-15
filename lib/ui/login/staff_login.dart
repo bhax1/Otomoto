@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:otomoto/ui/ux/login/admin_login.dart';
-import 'package:otomoto/ui/ux/login/helper/navigation_helpers.dart';
-import 'package:otomoto/ui/ux/login/widgets/common_login_screen.dart';
-import 'package:otomoto/ui/ux/main/staff/home/staff_home_screen.dart';
+import 'package:otomoto/ui/login/admin_login.dart';
+import 'package:otomoto/ui/login/helper/navigation_helpers.dart';
+import 'package:otomoto/ui/login/widgets/common_login_screen.dart';
+import 'package:otomoto/ui/main/staff/home/staff_home_screen.dart';
 
 class StaffLogin extends StatelessWidget {
   const StaffLogin({super.key});

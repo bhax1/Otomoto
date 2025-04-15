@@ -1,4 +1,3 @@
-import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -18,12 +17,30 @@ class _AddStaffFormState extends State<AddStaffForm> {
   final _address = TextEditingController();
   final _contact = TextEditingController();
   final _email = TextEditingController();
-  final _jobPosition = TextEditingController();
   final _emergencyContact = TextEditingController();
   DateTime? _birthdate;
   DateTime? _hireDate;
   String? _gender;
   bool _isLoading = false;
+
+  final List<int> _selectedRoleIds = [];
+  Map<int, String> _availableRoles = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRoles();
+  }
+
+  Future<void> _fetchRoles() async {
+    final roleSnap = await FirebaseFirestore.instance.collection('role').get();
+    final roles = {
+      for (var doc in roleSnap.docs) int.parse(doc.id): doc['name'] as String,
+    };
+    setState(() {
+      _availableRoles = roles;
+    });
+  }
 
   Future<void> _selectDate(
       BuildContext context, Function(DateTime) onPicked) async {
@@ -36,15 +53,14 @@ class _AddStaffFormState extends State<AddStaffForm> {
     if (picked != null) onPicked(picked);
   }
 
-  String hashPassword(String password) {
-    return BCrypt.hashpw(password, BCrypt.gensalt()); // Hash with salt
-  }
-
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate() ||
         _birthdate == null ||
         _hireDate == null ||
-        _gender == null) {
+        _gender == null ||
+        _selectedRoleIds.isEmpty) {
+      _showErrorDialog(
+          "Please fill all required fields including at least one role.");
       return;
     }
 
@@ -63,24 +79,30 @@ class _AddStaffFormState extends State<AddStaffForm> {
               : 0) +
           1;
 
-      String hashedPassword = hashPassword("123"); // Securely hash password
-
       await staffCollection.add({
+        'auth_id': "",
+        'staff_id': nextId,
+        'email': _email.text,
+        'username': "", // You may add logic to generate or input username
+        'created_at': FieldValue.serverTimestamp(),
+        'last_updated': FieldValue.serverTimestamp(),
+        'status': "Active",
+        'roles': _selectedRoleIds,
+      });
+
+      final staffProfileCollection =
+          FirebaseFirestore.instance.collection('staff_profiles');
+
+      await staffProfileCollection.add({
         'staff_id': nextId,
         'firstname': _firstName.text,
         'lastname': _lastName.text,
         'address': _address.text,
         'contact_num': _contact.text,
-        'email': _email.text,
-        'job_position': _jobPosition.text,
-        'birthdate': _birthdate?.toIso8601String(),
+        'birth_date': _birthdate?.toIso8601String(),
         'hire_date': _hireDate?.toIso8601String(),
         'gender': _gender,
         'emergency_contact': _emergencyContact.text,
-        'password': hashedPassword, // Store hashed password
-        'created_at': FieldValue.serverTimestamp(),
-        'lastUpdated': FieldValue.serverTimestamp(),
-        'status': "Active",
       });
 
       _showSuccessDialog("${_firstName.text} ${_lastName.text}");
@@ -121,16 +143,16 @@ class _AddStaffFormState extends State<AddStaffForm> {
         content: const Text("Are you sure you want to add this staff member?"),
         actions: [
           ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-              ),
-              onPressed: () => Navigator.pop(context, true),
-              child:
-                  const Text("Confirm", style: TextStyle(color: Colors.white))),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Confirm", style: TextStyle(color: Colors.white)),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child:
-                  const Text("Cancel", style: TextStyle(color: Colors.grey))),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
         ],
       ),
     );
@@ -147,7 +169,8 @@ class _AddStaffFormState extends State<AddStaffForm> {
             const Icon(Icons.info_outline, color: Colors.blue),
             const SizedBox(width: 8),
             Expanded(
-                child: Text('Staff member "$staffName" added successfully.')),
+              child: Text('Staff member "$staffName" added successfully.'),
+            ),
           ],
         ),
         actions: [
@@ -178,6 +201,11 @@ class _AddStaffFormState extends State<AddStaffForm> {
     _contact.clear();
     _email.clear();
     _emergencyContact.clear();
+    _birthdate = null;
+    _hireDate = null;
+    _gender = null;
+    _selectedRoleIds.clear();
+    setState(() {});
   }
 
   @override
@@ -187,14 +215,10 @@ class _AddStaffFormState extends State<AddStaffForm> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: _isLoading
-            ? const SingleChildScrollView(
-                child: SizedBox(
-                  child: Center(
-                    child: SpinKitThreeBounce(
-                      color: Colors.blueGrey,
-                      size: 30.0,
-                    ),
-                  ),
+            ? const Center(
+                child: SpinKitThreeBounce(
+                  color: Colors.blueGrey,
+                  size: 30.0,
                 ),
               )
             : Form(
@@ -226,7 +250,6 @@ class _AddStaffFormState extends State<AddStaffForm> {
                       _buildTextField("Contact Number", _contact,
                           keyboard: TextInputType.phone),
                       _buildTextField("Email", _email),
-                      _buildTextField("Job Position", _jobPosition),
                       _buildTextField("Emergency Contact", _emergencyContact,
                           keyboard: TextInputType.phone),
                       const Text(
@@ -244,6 +267,8 @@ class _AddStaffFormState extends State<AddStaffForm> {
                       _buildDatePickerField("Hire Date", _hireDate,
                           (date) => setState(() => _hireDate = date)),
                       _buildGenderDropdown(),
+                      const SizedBox(height: 12),
+                      _buildRoleMultiSelect(),
                       const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -314,6 +339,62 @@ class _AddStaffFormState extends State<AddStaffForm> {
         onChanged: (value) => setState(() => _gender = value),
         validator: (value) => value == null ? 'Required' : null,
       ),
+    );
+  }
+
+  Widget _buildRoleMultiSelect() {
+    const bookingManagerId = 2;
+    const bookingStaffId = 3;
+    const adminRoleId = 1;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Assign Roles",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          children: _availableRoles.entries
+              .where((entry) => entry.key != adminRoleId) // 🚫 Exclude Admin
+              .map((entry) {
+            final roleId = entry.key;
+            final roleName = entry.value;
+            final isSelected = _selectedRoleIds.contains(roleId);
+
+            // Disable logic
+            bool isDisabled = false;
+            if (roleId == bookingStaffId &&
+                _selectedRoleIds.contains(bookingManagerId)) {
+              isDisabled = true;
+            } else if (roleId == bookingManagerId &&
+                _selectedRoleIds.contains(bookingStaffId)) {
+              isDisabled = true;
+            }
+
+            return FilterChip(
+              label: Text(roleName),
+              selected: isSelected,
+              onSelected: isDisabled
+                  ? null
+                  : (selected) {
+                      setState(() {
+                        if (selected) {
+                          _selectedRoleIds.add(roleId);
+                        } else {
+                          _selectedRoleIds.remove(roleId);
+                        }
+                      });
+                    },
+              selectedColor: Colors.blue,
+              checkmarkColor: Colors.white,
+              disabledColor: Colors.grey.shade300,
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:otomoto/core/widgets/home_scaffold.dart';
 import 'package:otomoto/auth/providers/auth_service_provider.dart';
 import 'package:otomoto/auth/services/session_manager.dart';
-import 'package:otomoto/ui/ux/login/admin_login.dart';
+import 'package:otomoto/ui/login/admin_login.dart';
 import 'package:otomoto/core/models/user_model.dart';
 import 'package:otomoto/core/models/navigation_item.dart';
 
@@ -14,8 +14,8 @@ class StaffHomeScreen extends ConsumerWidget {
     final roleMap = {
       1: 'Admin',
       2: 'Booking Manager',
-      3: 'Support',
-      4: 'Car Admin',
+      3: 'Booking Agent',
+      4: 'Car Manager',
     };
 
     final roleNames = roles

@@ -1,44 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:otomoto/ui/ux/main/admin/pages/staff/components/staff_models.dart';
 
 class StaffDataSource extends DataTableSource {
-  final List<StaffMember> staff;
+  final List<Map<String, dynamic>> staff;
   final Function(int) onView;
   final Function(int) onUpdate;
   final Function(int) onDelete;
 
-  StaffDataSource({
-    required this.staff,
-    required this.onView,
-    required this.onUpdate,
-    required this.onDelete,
-  });
+  StaffDataSource(this.staff, this.onView, this.onUpdate, this.onDelete);
 
   @override
   DataRow? getRow(int index) {
     if (index >= staff.length) return null;
     final staffMember = staff[index];
 
-    String status = staffMember.status;
+    String status = staffMember['status'];
     status = status.isNotEmpty
         ? status[0].toUpperCase() + status.substring(1).toLowerCase()
         : '';
 
     return DataRow(cells: [
-      DataCell(Text(staffMember.id)),
-      DataCell(Text(staffMember.firstname)),
-      DataCell(Text(staffMember.lastname)),
-      DataCell(Text(staffMember.jobPosition)),
-      DataCell(Text(staffMember.contact)),
-      DataCell(Text(staffMember.email)),
+      DataCell(Text(staffMember['id'])),
+      DataCell(Text(staffMember['firstname'])),
+      DataCell(Text(staffMember['lastname'])),
+      DataCell(Text(staffMember['roles'])),
+      DataCell(Text(staffMember['contact'])),
+      DataCell(Text(staffMember['email'])),
       DataCell(
         Text(
           status,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: staffMember.status == 'active'
+            color: staffMember['status'] == 'active'
                 ? Colors.green
-                : staffMember.status == 'inactive'
+                : staffMember['status'] == 'inactive'
                     ? Colors.red
                     : Colors.blueGrey,
           ),
@@ -49,7 +43,7 @@ class StaffDataSource extends DataTableSource {
           children: [
             _buildIconButton(
                 Icons.visibility, Colors.orange, () => onView(index)),
-            if (staffMember.status != "Removed") ...[
+            if (staffMember['status'] != "Removed") ...[
               _buildIconButton(Icons.edit, Colors.blue, () => onUpdate(index)),
               _buildIconButton(Icons.delete, Colors.red, () => onDelete(index)),
             ]

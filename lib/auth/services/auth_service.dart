@@ -24,6 +24,11 @@ class AuthService {
       throw PermissionDeniedException();
     }
 
+    if (!isAdmin && userData.roles.contains(1)) {
+      await _authRepo.signOut();
+      throw UnexpectedRoleException();
+    }
+
     await _userRepo.updateLastLogin(userData.id);
     await _sessionManager.saveUser(userData.copyWith(uid: user.uid));
 

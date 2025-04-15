@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:otomoto/ui/ux/main/admin/pages/staff/staff_forms/add_staff.dart';
-import 'package:otomoto/ui/ux/main/admin/pages/staff/staff_forms/delete_staff.dart';
-import 'package:otomoto/ui/ux/main/admin/pages/staff/staff_forms/update_staff.dart';
-import 'package:otomoto/ui/ux/main/admin/pages/staff/staff_forms/view_staff.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:otomoto/ui/main/admin/pages/staff/staff_forms/add_staff.dart';
+import 'package:otomoto/ui/main/admin/pages/staff/staff_forms/delete_staff.dart';
+import 'package:otomoto/ui/main/admin/pages/staff/staff_forms/update_staff.dart';
+import 'package:otomoto/ui/main/admin/pages/staff/staff_forms/view_staff.dart';
 
 class StaffManagement extends StatefulWidget {
   const StaffManagement({super.key});
@@ -23,9 +24,10 @@ class _StaffManagementState extends State<StaffManagement> {
   bool _isLoading = true;
   int currentPage = 0;
   final firestore = FirebaseFirestore.instance;
-  bool _externalUpdatesAvailable = false;
   bool _isLocalChange = false;
   StreamSubscription<QuerySnapshot>? _staffUpdateListener;
+  String _nameQuery = '';
+  String _staffIdQuery = '';
 
   @override
   void initState() {
@@ -47,14 +49,8 @@ class _StaffManagementState extends State<StaffManagement> {
         _isLocalChange = false;
         return;
       }
-      if (mounted) setState(() => _externalUpdatesAvailable = true);
+      _fetchStaff(page: currentPage);
     });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _fetchStaff();
   }
 
   Future<void> _fetchStaff({int page = 0}) async {
@@ -72,7 +68,6 @@ class _StaffManagementState extends State<StaffManagement> {
         final staffData = staffDoc.data();
         final staffId = staffDoc.id;
 
-        // Fetch profile document
         final profileSnapshot =
             await firestore.collection('staff_profiles').doc(staffId).get();
         final profileData = profileSnapshot.data();
@@ -114,11 +109,6 @@ class _StaffManagementState extends State<StaffManagement> {
     }
   }
 
-  void _handleRefresh() {
-    setState(() => _externalUpdatesAvailable = false);
-    _fetchStaff(page: currentPage);
-  }
-
   void _showErrorDialog(String errorMessage) {
     showDialog(
       context: context,
@@ -128,9 +118,7 @@ class _StaffManagementState extends State<StaffManagement> {
           content: Text("Failed to fetch staff data: $errorMessage"),
           actions: <Widget>[
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text("Cancel"),
             ),
             TextButton(
@@ -144,45 +132,6 @@ class _StaffManagementState extends State<StaffManagement> {
         );
       },
     );
-  }
-
-  void _filterStaff(String query) {
-    _filter(query, 'name');
-  }
-
-  void _filterByStaffId(String query) {
-    _filter(query, 'id');
-  }
-
-  void _filter(String query, String type) {
-    setState(() {
-      filteredStaff = query.isEmpty
-          ? List.from(staffList)
-          : staffList.where((staff) {
-              if (type == 'name') {
-                String fullName =
-                    "${staff['firstname']} ${staff['lastname']}".toLowerCase();
-                return fullName.contains(query.toLowerCase()) ||
-                    staff['firstname']!
-                        .toLowerCase()
-                        .contains(query.toLowerCase()) ||
-                    staff['lastname']!
-                        .toLowerCase()
-                        .contains(query.toLowerCase()) ||
-                    staff['job_position']!
-                        .toLowerCase()
-                        .contains(query.toLowerCase()) ||
-                    staff['contact']!
-                        .toLowerCase()
-                        .contains(query.toLowerCase()) ||
-                    staff['email']!.toLowerCase().contains(query.toLowerCase());
-              } else {
-                return staff['id']!.toLowerCase().contains(query.toLowerCase());
-              }
-            }).toList();
-      _dataSource = StaffDataSource(
-          filteredStaff, _viewStaff, _updateStaff, _deleteStaff);
-    });
   }
 
   void _addStaff() async {
@@ -223,7 +172,7 @@ class _StaffManagementState extends State<StaffManagement> {
 
     if (result == true) {
       _isLocalChange = true;
-      _fetchStaff(page: currentPage); // Immediate refresh for current admin
+      _fetchStaff(page: currentPage);
     }
   }
 
@@ -254,7 +203,12 @@ class _StaffManagementState extends State<StaffManagement> {
             const SizedBox(height: 10),
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(
+                      child: SpinKitThreeBounce(
+                        color: Colors.blueGrey,
+                        size: 30.0,
+                      ),
+                    )
                   : _buildDataTable(),
             ),
           ],
@@ -266,58 +220,138 @@ class _StaffManagementState extends State<StaffManagement> {
   Widget _buildSearchBar() {
     return Row(
       children: [
-        SizedBox(
-          width: 300,
-          child: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              labelText: 'Search...',
-              prefixIcon: const Icon(Icons.search),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            onChanged: _filterStaff,
+        Expanded(
+          child: Row(
+            children: [
+              SizedBox(
+                width: 300,
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    labelText: 'Search by name, contact, email...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onChanged: (value) {
+                    _nameQuery = value;
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              SizedBox(
+                width: 200,
+                child: TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Staff ID',
+                    prefixIcon: const Icon(Icons.confirmation_number_sharp),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onChanged: (value) {
+                    _staffIdQuery = value;
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: _performSearch,
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                child:
+                    const Text('Search', style: TextStyle(color: Colors.white)),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: _resetSearch,
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                child:
+                    const Text('Clear', style: TextStyle(color: Colors.white)),
+              ),
+            ],
           ),
         ),
-        const SizedBox(width: 10),
-        SizedBox(
-          width: 200,
-          child: TextField(
-            decoration: InputDecoration(
-              labelText: 'Staff ID',
-              prefixIcon: const Icon(Icons.confirmation_number_sharp),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            onChanged: _filterByStaffId,
-          ),
-        ),
-        const SizedBox(width: 10),
         ElevatedButton(
           onPressed: _addStaff,
           style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
           child: const Text('+ Add', style: TextStyle(color: Colors.white)),
         ),
-        const Spacer(),
-        if (_externalUpdatesAvailable)
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Badge(
-              smallSize: 8,
-              backgroundColor: Colors.red,
-              child: IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: _handleRefresh,
-              ),
-            ),
-          )
-        else
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _handleRefresh,
-          ),
       ],
     );
+  }
+
+  Future<void> _performSearch() async {
+    setState(() => _isLoading = true);
+    try {
+      List<Map<String, dynamic>> staffDataList = [];
+
+      if (_staffIdQuery.isNotEmpty) {
+        final docSnapshot =
+            await firestore.collection('staff').doc(_staffIdQuery).get();
+
+        if (docSnapshot.exists) {
+          staffDataList.add(await _buildStaffMap(docSnapshot));
+        }
+      } else {
+        QuerySnapshot<Map<String, dynamic>> snapshot = await firestore
+            .collection('staff')
+            .where('search_keywords', arrayContains: _nameQuery.toLowerCase())
+            .get();
+
+        staffDataList = await Future.wait(snapshot.docs.map(_buildStaffMap));
+      }
+
+      setState(() {
+        staffList = staffDataList;
+        filteredStaff = List.from(staffDataList);
+        _dataSource = StaffDataSource(
+            filteredStaff, _viewStaff, _updateStaff, _deleteStaff);
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showErrorDialog(
+          'Something went wrong while searching. Please try again.');
+      debugPrint('Search error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> _buildStaffMap(
+      DocumentSnapshot<Map<String, dynamic>> staffDoc) async {
+    final staffData = staffDoc.data();
+    final staffId = staffDoc.id;
+
+    final profileSnapshot =
+        await firestore.collection('staff_profiles').doc(staffId).get();
+    final profileData = profileSnapshot.data();
+
+    String roleName = '';
+    final roles = staffData?['roles'];
+    if (roles is List && roles.isNotEmpty) {
+      final roleId = roles[0].toString();
+      final roleSnapshot =
+          await firestore.collection('roles').doc(roleId).get();
+      if (roleSnapshot.exists) {
+        final roleData = roleSnapshot.data();
+        roleName = roleData?['name'] ?? '';
+      }
+    }
+
+    return {
+      'id': staffId,
+      'firstname': profileData?['first_name'] ?? '',
+      'lastname': profileData?['last_name'] ?? '',
+      'contact': profileData?['phone_number'] ?? '',
+      'email': staffData?['email'] ?? '',
+      'status': staffData?['status'] ?? '',
+      'job_position': profileData?['job_position'] ?? roleName,
+    };
+  }
+
+  void _resetSearch() {
+    _searchController.clear();
+    _nameQuery = '';
+    _staffIdQuery = '';
+    _fetchStaff(page: currentPage);
   }
 
   Widget _buildDataTable() {

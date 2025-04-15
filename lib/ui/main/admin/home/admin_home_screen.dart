@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:otomoto/archive/staff_management.dart';
 import 'package:otomoto/core/models/navigation_item.dart';
 import 'package:otomoto/core/widgets/home_scaffold.dart';
 import 'package:otomoto/auth/services/session_manager.dart';
 import 'package:otomoto/auth/providers/auth_service_provider.dart';
-import 'package:otomoto/ui/ux/login/admin_login.dart';
+import 'package:otomoto/ui/login/admin_login.dart';
 import 'package:otomoto/core/models/user_model.dart';
-import 'package:otomoto/ui/ux/main/admin/pages/dashboard/dashboard.dart';
+import 'package:otomoto/ui/main/admin/pages/dashboard/dashboard.dart';
+import 'package:otomoto/ui/main/admin/pages/staff/staff_management.dart';
 
 class AdminHomeScreen extends ConsumerWidget {
   const AdminHomeScreen({super.key});

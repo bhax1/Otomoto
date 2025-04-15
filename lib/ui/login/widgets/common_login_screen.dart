@@ -6,9 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:otomoto/auth/errors/auth_exceptions.dart';
 import 'package:otomoto/core/models/user_model.dart';
 import 'package:otomoto/auth/providers/auth_service_provider.dart';
-import 'package:otomoto/ui/ux/login/widgets/auth_footer.dart';
-import 'package:otomoto/ui/ux/login/widgets/auth_header.dart';
-import 'package:otomoto/ui/ux/login/widgets/auth_text_field.dart';
+import 'package:otomoto/ui/login/widgets/auth_footer.dart';
+import 'package:otomoto/ui/login/widgets/auth_header.dart';
+import 'package:otomoto/ui/login/widgets/auth_text_field.dart';
 
 class CommonLoginScreen extends ConsumerStatefulWidget {
   final String title;

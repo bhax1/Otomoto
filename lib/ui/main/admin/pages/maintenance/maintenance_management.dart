@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:otomoto/ui/ux/main/admin/pages/maintenance/maintenance_forms/cancel_maintenance.dart';
-import 'package:otomoto/ui/ux/main/admin/pages/maintenance/maintenance_forms/update_maintenance.dart';
-import 'package:otomoto/ui/ux/main/admin/pages/maintenance/maintenance_forms/view_maintenance.dart';
+import 'package:otomoto/ui/main/admin/pages/maintenance/maintenance_forms/cancel_maintenance.dart';
+import 'package:otomoto/ui/main/admin/pages/maintenance/maintenance_forms/update_maintenance.dart';
+import 'package:otomoto/ui/main/admin/pages/maintenance/maintenance_forms/view_maintenance.dart';
 
 class VehicleMaintenance extends StatefulWidget {
   const VehicleMaintenance({super.key});
